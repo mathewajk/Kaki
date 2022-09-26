@@ -1,0 +1,23 @@
+# Mac OS
+__MACOSX
+.DS_Store
+._*
+
+.Spotlight-V100
+.Trashes
+
+ehthumbs.db
+Thumbs.db
+
+# Virtual environments
+*env
+
+# VS Code
+.vscode
+
+# Node
+node_modules
+
+logs
+*.log
+npm-debug.log*
