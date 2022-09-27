@@ -10,4 +10,4 @@ class VocabItemSerializer(serializers.ModelSerializer):
     class Meta:
 
         model = VocabItem
-        fields = ('id', 'tango', 'yomi', 'pitch')
+        fields = ('id', 'tango', 'yomi', 'pitch', 'learned')
