@@ -74,11 +74,13 @@ const WordList = () => {
   if (error) return <pre>{error.message}</pre>;
 
   return (
-    <ul className="list-group list-group-flush">
+    <table style={{width: 50 + '%'}}><tbody>
       {data.words.map((word) => (
-        <li key={word.id}>{word.tango} {word.yomi} {word.pitch} <span>学習済み</span> <UpdateWord word={word}/> <DeleteWord word={word}/> </li>
+        <tr key={word.id}>
+          <td><b>{word.tango}</b></td><td>{word.yomi}</td><td>{word.pitch}</td><td>学習済み <UpdateWord word={word}/></td><td><DeleteWord word={word}/></td>
+        </tr>
       ))}
-    </ul>
+    </tbody></table>
   );
 };
 
@@ -132,7 +134,7 @@ const CreateWord = (tango, yomi, pitch) => {
 
         tango.value = '';
         yomi.value = '';
-        pitch.value = -1;
+        pitch.value = '';
 
       }}
 
