@@ -38,6 +38,7 @@
 
 /* data attributes! less complex than e.g. changing class name */
 .wordCard[data-learned="true"] {
+  opacity: 0.75;
   background-color: #70554c;
   color: grey;
   filter: grayscale(100%);
@@ -64,6 +65,10 @@
   height: 3px;
   width: 1em;
   background-color: #330D00;
+}
+
+.wordCard[data-learned="true"] .mora[data-pitch="high"]::before {
+  background-color: grey;
 }
 
 .mora[data-pitch="peak"]::before {
