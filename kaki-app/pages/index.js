@@ -126,7 +126,13 @@ const UpdateWord = (props) => {
   <label className={styles.learned}><div className={styles["sr-only"]}>学習済み<input type="checkbox" onChange={e => {
     e.preventDefault();
     let id = parseInt(props.word.id);
-    updateWord({variables: {id: id, tango: props.word.tango, yomi: props.word.yomi, pitch: props.word.pitch, learned: !props.word.learned}, refetchQueries: [ { query: VOCAB_QUERY}]})
+    updateWord({variables: {
+      id: id, 
+      tango: props.word.tango, 
+      yomi: props.word.yomi, 
+      pitch: props.word.pitch, 
+      learned: !props.word.learned
+    }, refetchQueries: [ { query: VOCAB_QUERY}]})
   }} checked={props.word.learned} ></input></div></label>
   );
 }
