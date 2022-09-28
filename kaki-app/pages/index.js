@@ -1,7 +1,8 @@
-import React, { useState, useCallback } from "react";
-import logo from './logo.svg';
-import './App.css';
+import Head from 'next/head'
+import Image from 'next/image'
+import styles from '../styles/Home.module.css'
 
+import React, { useState, useCallback } from "react";
 import { useQuery, useMutation, gql } from "@apollo/client";
 
 const VOCAB_QUERY = gql`
@@ -53,11 +54,11 @@ mutation deleteWord ($id: Int!) {
 
 function App() {
   return (
-    <main className="content" style={{margin: 50 + 'px'}}>
+    <main className={styles.content}>
       <div className="">
           <CreateWord/>
       </div>
-      <h1 className="text-success text-uppercase text-center my-4">
+      <h1>
       単語表
       </h1>
       <hr/>
@@ -74,27 +75,27 @@ const WordList = () => {
   if (error) return <pre>{error.message}</pre>;
 
   return (
-    <section className="wordList">
+    <section className={styles.wordList}>
       {data.words.map((word) => (
-        <article className="wordCard" key={word.id} data-learned={word.learned}>
-          <h2 className="tango">{word.tango}</h2>
+        <article className={styles.wordCard} key={word.id} data-learned={word.learned}>
+          <h2 className={styles.tango}>{word.tango}</h2>
           <p style={{"--pitch": word.pitch}}>
             {word.yomi.split('').map((mora, i) => {
               if(i == 0) {
                 if(word.pitch == 1)
-                  return <span className="mora" key={mora} data-pitch="peak">{mora}</span>
+                  return <span className={styles.mora} key={mora} data-pitch="peak">{mora}</span>
               }
               else {
                 if (word.pitch == 0)
-                  return <span className="mora" key={mora} data-pitch="high">{mora}</span>
+                  return <span className={styles.mora} key={mora} data-pitch="high">{mora}</span>
                 if(i < word.pitch - 1)
                   return <span data-pitch="high">{mora}</span>
                 else if (i == word.pitch - 1)
-                  return <span className="mora" key={mora} data-pitch="peak">{mora}</span>
+                  return <span className={styles.mora} key={mora} data-pitch="peak">{mora}</span>
               }
-              return <span className="mora" key={mora} data-pitch="low">{mora}</span>
+              return <span className={styles.mora} key={mora} data-pitch="low">{mora}</span>
             })}
-          <span className="sr-only"> - Pitch accent: {word.pitch}</span></p>
+          <span className={styles["sr-only"]}> - Pitch accent: {word.pitch}</span></p>
           <UpdateWord word={word}/><DeleteWord word={word}/>
         </article>
       ))}
@@ -106,7 +107,7 @@ const DeleteWord = (props) => {
 
   const [deleteWord] = useMutation(DELETE_WORD);
   
-  return(<button className="deleteWord" onClick={e => {
+  return(<button className={styles.deleteWord} onClick={e => {
     e.preventDefault();
     let id = parseInt(props.word.id);
     deleteWord({variables: {id: id}, refetchQueries: [ { query: VOCAB_QUERY}]})
@@ -122,7 +123,7 @@ const UpdateWord = (props) => {
   const [updateWord] = useMutation(UPDATE_WORD);
   
   return(
-  <label className="learned"><div className="sr-only">学習済み<input type="checkbox" onChange={e => {
+  <label className={styles.learned}><div className={styles["sr-only"]}>学習済み<input type="checkbox" onChange={e => {
     e.preventDefault();
     let id = parseInt(props.word.id);
     updateWord({variables: {id: id, tango: props.word.tango, yomi: props.word.yomi, pitch: props.word.pitch, learned: !props.word.learned}, refetchQueries: [ { query: VOCAB_QUERY}]})
