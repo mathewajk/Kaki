@@ -1,5 +1,3 @@
-import Head from 'next/head'
-import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 
 import React, { useState, useEffect } from "react";
@@ -71,6 +69,11 @@ function App() {
 const WordList = () => {
   
   const { data, loading, error } = useQuery(VOCAB_QUERY);
+  
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isEditOpen,   setIsEditOpen]   = useState(false);
+
+  const [selectedWord, setSelectedWord] = useState('');
 
   if (loading) return "Loading...";
   if (error) return <pre>{error.message}</pre>;
@@ -81,9 +84,13 @@ const WordList = () => {
         <article className={styles.wordCard} key={word.id} data-learned={word.learned}>
           <h2 className={styles.tango}>{word.tango}</h2>
           <Pitch word={word}/>
-          <LearnWord word={word}/><UpdateWord word={word}/><DeleteWordButton word={word}/>
+          <LearnWord word={word}/>
+          <UpdateWordButton word={word} setSelectedWord={setSelectedWord} setIsOpen={setIsEditOpen}/>
+          <DeleteWordButton word={word} setSelectedWord={setSelectedWord} setIsOpen={setIsDeleteOpen}/>
         </article>
       ))}
+      <UpdateWordDialogue word={selectedWord} isOpen={isEditOpen}   setIsOpen={setIsEditOpen}/>
+      <DeleteWordDialogue word={selectedWord} isOpen={isDeleteOpen} setIsOpen={setIsDeleteOpen}/>
     </section>
   );
 };
@@ -98,13 +105,15 @@ const Pitch = (props) => {
         if(i == 0) {
           if(word.pitch == 1)
             return <span className={styles.mora} key={mora} data-pitch="peak">{mora}</span>
+          else
+            return <span className={styles.mora} key={mora} data-pitch="low">{mora}</span>
         }
         else {
           if (word.pitch == 0)
             return <span className={styles.mora} key={mora} data-pitch="high">{mora}</span>
           if(i < word.pitch - 1)
-            return <span data-pitch="high">{mora}</span>
-          else if (i == word.pitch - 1)
+            return <span className={styles.mora} data-pitch="high">{mora}</span>
+          if (i == word.pitch - 1)
             return <span className={styles.mora} key={mora} data-pitch="peak">{mora}</span>
         }
         return <span className={styles.mora} key={mora} data-pitch="low">{mora}</span>
@@ -114,19 +123,22 @@ const Pitch = (props) => {
 }
 
 const DeleteWordButton = (props) => {
-
-  const [deleteWord] = useMutation(DELETE_WORD);
-  const [isOpen, setIsOpen] = useState(false);
-
   return(
-    <span>
       <button className={styles.deleteWord} onClick={e => {
         e.preventDefault();
-        setIsOpen(true);
+        props.setIsOpen(true);
+        props.setSelectedWord(props.word);
       }}>
       <svg width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M10 5h4a2 2 0 1 0-4 0ZM8.5 5a3.5 3.5 0 1 1 7 0h5.75a.75.75 0 0 1 0 1.5h-1.32l-1.17 12.111A3.75 3.75 0 0 1 15.026 22H8.974a3.75 3.75 0 0 1-3.733-3.389L4.07 6.5H2.75a.75.75 0 0 1 0-1.5H8.5Zm2 4.75a.75.75 0 0 0-1.5 0v7.5a.75.75 0 0 0 1.5 0v-7.5ZM14.25 9a.75.75 0 0 0-.75.75v7.5a.75.75 0 0 0 1.5 0v-7.5a.75.75 0 0 0-.75-.75Z"></path></svg> 削除
       </button>
-      <Dialog className={styles.editWord} open={isOpen} onClose={() => setIsOpen(false)}>
+  );
+}
+
+const DeleteWordDialogue = (props) => {
+  
+  const [deleteWord] = useMutation(DELETE_WORD);
+
+  return(<Dialog className={styles.editWord} open={props.isOpen} onClose={() => props.setIsOpen(false)}>
         <div>
           <Dialog.Panel className={styles.dialogPanel}>
             
@@ -136,79 +148,87 @@ const DeleteWordButton = (props) => {
             <button className={styles.deleteWord} onClick={e => {
               e.preventDefault();
               let id = parseInt(props.word.id);
-              deleteWord({variables: {id: id}, refetchQueries: [ { query: VOCAB_QUERY}]})
+              deleteWord({variables: {id: id}, refetchQueries: [ { query: VOCAB_QUERY}]});
+              props.setIsOpen(false);
             }}>
             <svg width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M10 5h4a2 2 0 1 0-4 0ZM8.5 5a3.5 3.5 0 1 1 7 0h5.75a.75.75 0 0 1 0 1.5h-1.32l-1.17 12.111A3.75 3.75 0 0 1 15.026 22H8.974a3.75 3.75 0 0 1-3.733-3.389L4.07 6.5H2.75a.75.75 0 0 1 0-1.5H8.5Zm2 4.75a.75.75 0 0 0-1.5 0v7.5a.75.75 0 0 0 1.5 0v-7.5ZM14.25 9a.75.75 0 0 0-.75.75v7.5a.75.75 0 0 0 1.5 0v-7.5a.75.75 0 0 0-.75-.75Z"></path></svg> 削除
             </button>
           </Dialog.Panel>
         </div>
       </Dialog>
-    </span>
   );
 }
 
-const UpdateWord = (props, yomi, pitch) => {
+const UpdateWordButton = (props, yomi, pitch) => {
   const [updateWord] = useMutation(UPDATE_WORD);
-  const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <span>
-     <button className={styles.editWord} onClick={() => setIsOpen(true)}>
+   <button className={styles.editWord} onClick={e => {
+      props.setIsOpen(true);
+      props.setSelectedWord(props.word);
+    }}>
      <svg width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M6 22q-.825 0-1.412-.587Q4 20.825 4 20V4q0-.825.588-1.413Q5.175 2 6 2h8l6 6v4h-2V9h-5V4H6v16h6v2Zm0-2V4v16Zm12.3-5.475l1.075 1.075l-3.875 3.85v1.05h1.05l3.875-3.85l1.05 1.05l-4.3 4.3H14v-3.175Zm3.175 3.175L18.3 14.525l1.45-1.45q.275-.275.7-.275q.425 0 .7.275l1.775 1.775q.275.275.275.7q0 .425-.275.7Z"></path></svg> 編集</button>
-      <Dialog className={styles.editWord} open={isOpen} onClose={() => setIsOpen(false)}>
-        <div>
-        <Dialog.Panel className={styles.dialogPanel}>
-          
-          <Dialog.Description className={styles['sr-only']}><h3>単語を編集中</h3></Dialog.Description>  
-          <Dialog.Title><h2 className={styles.tango}>{props.word.tango}</h2></Dialog.Title>
-          <Pitch word={props.word}/>
-            <form
-              onSubmit={e => {
-                
-                e.preventDefault();
+  );
+}
 
-                updateWord({ variables: {
-                  id: parseInt(props.word.id),
-                  tango: props.word.tango,
-                  yomi: yomi.value,
-                  pitch: parseInt(pitch.value),
-                  learned: props.word.learned
-                },
-                refetchQueries: [{ query: VOCAB_QUERY }]
+const UpdateWordDialogue = (props, yomi, pitch) => {
+  const [updateWord] = useMutation(UPDATE_WORD);
 
-              });
+  return (
+    <Dialog className={styles.editWord} open={props.isOpen} onClose={() => props.setIsOpen(false)}>
+    <div>
+    <Dialog.Panel className={styles.dialogPanel}>
+      
+      <Dialog.Description className={styles['sr-only']}><h3>単語を編集中</h3></Dialog.Description>  
+      <Dialog.Title><h2 className={styles.tango}>{props.word.tango}</h2></Dialog.Title>
+      <Pitch word={props.word}/>
+        <form
+          onSubmit={e => {
+            
+            e.preventDefault();
 
-              yomi.value = props.word.yomi;
-              pitch.value = props.word.pitch;
-              setIsOpen(false);
-            }}
-          > 
-        
-          <p><label><b>読み　</b></label>
-          <input
-            defaultValue={props.word.yomi} 
-            ref={node => {
-              yomi = node;
-            }}
-            style={{ marginRight: '1em' }}
-          /></p>
+            updateWord({ variables: {
+              id: parseInt(props.word.id),
+              tango: props.word.tango,
+              yomi: yomi.value,
+              pitch: parseInt(pitch.value),
+              learned: props.word.learned
+            },
+            refetchQueries: [{ query: VOCAB_QUERY }]
 
-          <p><label><b>アクセント　</b></label>
-          <input
-            type="text"
-            defaultValue={props.word.pitch} 
-            ref={node => {
-              pitch = node;
-            }}
-            style={{ marginRight: '1em' }} 
-            /></p>
-          
-          <button type="submit" style={{ cursor: 'pointer' }}>更新</button>
-          </form>
-          </Dialog.Panel>
-          </div>
-      </Dialog>
-    </span>);
+          });
+
+          yomi.value = props.word.yomi;
+          pitch.value = props.word.pitch;
+          props.setIsOpen(false);
+        }}
+      > 
+    
+      <p><label><b>読み　</b></label>
+      <input
+        defaultValue={props.word.yomi} 
+        ref={node => {
+          yomi = node;
+        }}
+        style={{ marginRight: '1em' }}
+      /></p>
+
+      <p><label><b>アクセント　</b></label>
+      <input
+        type="text"
+        defaultValue={props.word.pitch} 
+        ref={node => {
+          pitch = node;
+        }}
+        style={{ marginRight: '1em' }} 
+        /></p>
+      
+      <button type="submit" style={{ cursor: 'pointer' }}>更新</button>
+      </form>
+      </Dialog.Panel>
+      </div>
+  </Dialog>
+  );
 }
 
 const LearnWord = (props) => {
@@ -235,7 +255,7 @@ const CreateWord = (tango, yomi, pitch) => {
   const [createWord] = useMutation(CREATE_WORD);
 
   return (
-    <div>
+    <div className={styles.createWord}>
       <form
         onSubmit={e => {
           
@@ -256,8 +276,6 @@ const CreateWord = (tango, yomi, pitch) => {
         pitch.value = '';
 
       }}
-
-      style = {{ marginTop: '2em', marginBottom: '2em' }}
      > 
      
      <label>単語：</label>
