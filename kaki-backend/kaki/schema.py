@@ -1,19 +1,41 @@
 import graphene
 from graphene_django import DjangoObjectType
-from kaki.models import VocabItem
+from kaki.models import VocabItem, User, StudyItem
 
 class VocabType(DjangoObjectType):
     class Meta:
         model = VocabItem
         fields = ('id', 'tango', 'yomi', 'pitch', 'learned')
 
-class Query(graphene.ObjectType):
-    
-    words = graphene.List(VocabType)
+class UserType(DjangoObjectType):
+    class Meta:
+        model = User
+        fields = ('id', 'name')
 
-    # Function name must be of the form 'resolve_{variable}' to work!
-    def resolve_words(self, info, **kwargs):
-        return VocabItem.objects.all()
+class StudyItemType(DjangoObjectType):
+    class Meta:
+        model = StudyItem
+        fields = ('id', 'user', 'item', 'priority')
+
+
+# class User(graphene.ObjectType):
+
+#     name = graphene.String()
+
+#     def resolve_user(self, info, **kwargs):
+#         return self.name
+
+class CreateUser(graphene.Mutation):
+    class Arguments:
+        name = graphene.String()
+    
+    ok = graphene.Boolean()
+    user = graphene.Field(UserType)
+
+    def mutate(self, info, name):
+        user = User(name=name)
+        user.save()
+        return CreateUser(ok=True, user=user)
 
 class CreateVocabItem(graphene.Mutation):
 
@@ -30,7 +52,7 @@ class CreateVocabItem(graphene.Mutation):
     def mutate(self, info, tango, yomi, pitch, learned):
         word = VocabItem(tango=tango, yomi=yomi, pitch=pitch, learned=learned)
         word.save()
-        return CreateVocabItem(ok=True, word=word) #ok is stipulated?
+        return CreateVocabItem(ok=True, word=word)
 
 class DeleteVocabItem(graphene.Mutation):
     class Arguments:
@@ -64,8 +86,21 @@ class UpdateVocabItem(graphene.Mutation):
         return UpdateVocabItem(ok=True, word=word)
 
 
+class Query(graphene.ObjectType):
+    
+    words = graphene.List(VocabType)
+    users = graphene.List(UserType)
+
+    # Function name must be of the form 'resolve_{variable}' to work!
+    def resolve_words(self, info, **kwargs):
+        return VocabItem.objects.all()
+
+    def resolve_users(self, info, **kwargs):
+        return User.objects.all()
+
 class Mutation(graphene.ObjectType):
     create_word = CreateVocabItem.Field()
+    create_user = CreateUser.Field()
     delete_word = DeleteVocabItem.Field()
     update_word = UpdateVocabItem.Field()
 

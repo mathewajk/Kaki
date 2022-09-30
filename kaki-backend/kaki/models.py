@@ -9,3 +9,21 @@ class VocabItem(models.Model):
 
     def __str__(self):
         return "{0} ({1}) | {2}".format(self.tango, self.yomi, self.pitch)
+
+
+class User(models.Model):
+
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+
+class StudyItem(models.Model):
+
+    user     = models.OneToOneField(User, on_delete=models.CASCADE)
+    item     = models.ForeignKey(VocabItem, related_name="list_entry", on_delete=models.CASCADE)
+    priority = models.IntegerField()
+
+    def __str__(self):
+        return "{0}, {1}".format(self.vocab, self.priority)
