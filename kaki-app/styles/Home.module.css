@@ -174,7 +174,7 @@ button.deleteWord, button.editWord {
   background-color: rgb(134, 191, 18);
 }
 
-.content button, .editWord button {
+.content button, .editWord button, .deleteWord button {
   padding: 1em;
   border: none;
   background-color: orangered;
@@ -182,9 +182,8 @@ button.deleteWord, button.editWord {
   font-weight: bold;
   font-size: 16px;
   border-radius: 5px;
+  cursor: pointer;
 }
-
-
 
 .wordCard[data-learned="true"] button {
   color: white;

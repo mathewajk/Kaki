@@ -2,7 +2,7 @@ import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, gql } from "@apollo/client";
 import { Dialog } from '@headlessui/react'
 
@@ -81,7 +81,7 @@ const WordList = () => {
         <article className={styles.wordCard} key={word.id} data-learned={word.learned}>
           <h2 className={styles.tango}>{word.tango}</h2>
           <Pitch word={word}/>
-          <LearnWord word={word}/><UpdateWord word={word}/><DeleteWord word={word}/>
+          <LearnWord word={word}/><UpdateWord word={word}/><DeleteWordButton word={word}/>
         </article>
       ))}
     </section>
@@ -113,17 +113,37 @@ const Pitch = (props) => {
   );
 }
 
-const DeleteWord = (props) => {
+const DeleteWordButton = (props) => {
 
   const [deleteWord] = useMutation(DELETE_WORD);
-  
-  return(<button className={styles.deleteWord} onClick={e => {
-    e.preventDefault();
-    let id = parseInt(props.word.id);
-    deleteWord({variables: {id: id}, refetchQueries: [ { query: VOCAB_QUERY}]})
-  }}>
-    <svg width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M10 5h4a2 2 0 1 0-4 0ZM8.5 5a3.5 3.5 0 1 1 7 0h5.75a.75.75 0 0 1 0 1.5h-1.32l-1.17 12.111A3.75 3.75 0 0 1 15.026 22H8.974a3.75 3.75 0 0 1-3.733-3.389L4.07 6.5H2.75a.75.75 0 0 1 0-1.5H8.5Zm2 4.75a.75.75 0 0 0-1.5 0v7.5a.75.75 0 0 0 1.5 0v-7.5ZM14.25 9a.75.75 0 0 0-.75.75v7.5a.75.75 0 0 0 1.5 0v-7.5a.75.75 0 0 0-.75-.75Z"></path></svg> 削除
-    </button>
+  const [isOpen, setIsOpen] = useState(false);
+
+  return(
+    <span>
+      <button className={styles.deleteWord} onClick={e => {
+        e.preventDefault();
+        setIsOpen(true);
+      }}>
+      <svg width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M10 5h4a2 2 0 1 0-4 0ZM8.5 5a3.5 3.5 0 1 1 7 0h5.75a.75.75 0 0 1 0 1.5h-1.32l-1.17 12.111A3.75 3.75 0 0 1 15.026 22H8.974a3.75 3.75 0 0 1-3.733-3.389L4.07 6.5H2.75a.75.75 0 0 1 0-1.5H8.5Zm2 4.75a.75.75 0 0 0-1.5 0v7.5a.75.75 0 0 0 1.5 0v-7.5ZM14.25 9a.75.75 0 0 0-.75.75v7.5a.75.75 0 0 0 1.5 0v-7.5a.75.75 0 0 0-.75-.75Z"></path></svg> 削除
+      </button>
+      <Dialog className={styles.editWord} open={isOpen} onClose={() => setIsOpen(false)}>
+        <div>
+          <Dialog.Panel className={styles.dialogPanel}>
+            
+            <Dialog.Description className={styles['sr-only']}><h3>単語を削除中</h3></Dialog.Description>  
+            <Dialog.Title></Dialog.Title>
+            <p>「<span style={{color: 'orangered'}}>{props.word.tango}</span>」をこのリストから削除してもよろしいですか？</p>
+            <button className={styles.deleteWord} onClick={e => {
+              e.preventDefault();
+              let id = parseInt(props.word.id);
+              deleteWord({variables: {id: id}, refetchQueries: [ { query: VOCAB_QUERY}]})
+            }}>
+            <svg width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M10 5h4a2 2 0 1 0-4 0ZM8.5 5a3.5 3.5 0 1 1 7 0h5.75a.75.75 0 0 1 0 1.5h-1.32l-1.17 12.111A3.75 3.75 0 0 1 15.026 22H8.974a3.75 3.75 0 0 1-3.733-3.389L4.07 6.5H2.75a.75.75 0 0 1 0-1.5H8.5Zm2 4.75a.75.75 0 0 0-1.5 0v7.5a.75.75 0 0 0 1.5 0v-7.5ZM14.25 9a.75.75 0 0 0-.75.75v7.5a.75.75 0 0 0 1.5 0v-7.5a.75.75 0 0 0-.75-.75Z"></path></svg> 削除
+            </button>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
+    </span>
   );
 }
 
