@@ -151,6 +151,10 @@ button.deleteWord, button.editWord {
   margin-bottom: 1em;
 }
 
+.createWord {
+
+}
+
 .dialogPanel {
   font-size: 20px;
   
