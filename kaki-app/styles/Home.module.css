@@ -151,8 +151,39 @@ button.deleteWord, button.editWord {
   margin-bottom: 1em;
 }
 
-.createWord {
+.studyCard {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
+.studyItem h2 {
+  font-size: 4em;
+}
+
+.studyItem {
+  width: 50%;
+  text-align: center;
+}
+
+.studyItem .buttonGrid button.correct {
+  background-color:rgb(192, 233, 112);
+}
+.studyItem .buttonGrid button.incorrect {
+  background-color: rgb(238, 156, 105);
+}
+
+
+.buttonGrid {
+  display: grid;
+  grid-template-columns: repeat(var(--column-count), 1fr); /*define var() for num of colums; 1fr - one column per var amount*/
+  --column-count: 2; /* Can adjust with media query */
+  gap: 1em;
+}
+.studyItem .buttonGrid button {
+  background-color: rgb(232, 242, 204);
+  color:#2f2f6e;
+  font-weight: 300;
 }
 
 .dialogPanel {
