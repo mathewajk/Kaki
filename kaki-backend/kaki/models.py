@@ -8,7 +8,7 @@ class VocabItem(models.Model):
     learned = models.BooleanField(default=False)
 
     def __str__(self):
-        return "{0} ({1}) | {2}".format(self.tango, self.yomi, self.pitch)
+        return "{0} ({1})".format(self.tango, self.yomi)
 
 
 class User(models.Model):
@@ -21,9 +21,9 @@ class User(models.Model):
 
 class StudyItem(models.Model):
 
-    user     = models.OneToOneField(User, on_delete=models.CASCADE)
-    item     = models.ForeignKey(VocabItem, related_name="list_entry", on_delete=models.CASCADE)
+    user     = models.ForeignKey(User, on_delete=models.CASCADE)
+    item     = models.ForeignKey(VocabItem, on_delete=models.CASCADE)
     priority = models.IntegerField()
 
     def __str__(self):
-        return "{0}, {1}".format(self.vocab, self.priority)
+        return "{0}, {1}, {2}".format(self.user.name, self.item.tango, self.priority)

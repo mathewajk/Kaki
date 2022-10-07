@@ -18,13 +18,6 @@ class StudyItemType(DjangoObjectType):
         fields = ('id', 'user', 'item', 'priority')
 
 
-# class User(graphene.ObjectType):
-
-#     name = graphene.String()
-
-#     def resolve_user(self, info, **kwargs):
-#         return self.name
-
 class CreateUser(graphene.Mutation):
     class Arguments:
         name = graphene.String()
@@ -36,6 +29,30 @@ class CreateUser(graphene.Mutation):
         user = User(name=name)
         user.save()
         return CreateUser(ok=True, user=user)
+
+class CreateStudyItem(graphene.Mutation):
+    class Arguments:
+        user_id = graphene.Int()
+        item_id = graphene.Int()
+        priority = graphene.Int()
+    
+    ok = graphene.Boolean()
+    study_item = graphene.Field(StudyItemType)
+
+    def mutate(self, info, user_id, item_id, priority):
+        user = User.objects.get(id=user_id)
+        item = VocabItem.objects.get(id=item_id)
+        
+        print("Create study item:")
+        study_item = StudyItem(user=user, item=item, priority=priority)
+        print(study_item)
+
+        try:
+            study_item.save()
+        except Exception as e:
+            print(e)
+        print("End")
+        return CreateStudyItem(ok=True, study_item=study_item)
 
 class CreateVocabItem(graphene.Mutation):
 
@@ -59,6 +76,7 @@ class DeleteVocabItem(graphene.Mutation):
         id = graphene.Int()
 
     ok = graphene.Boolean()
+    
 
     def mutate(self, info, id):
         word = VocabItem.objects.get(id=id)
@@ -85,11 +103,15 @@ class UpdateVocabItem(graphene.Mutation):
         word.save()
         return UpdateVocabItem(ok=True, word=word)
 
-
 class Query(graphene.ObjectType):
     
     words = graphene.List(VocabType)
     users = graphene.List(UserType)
+    user = graphene.Field(UserType, id=graphene.Int())
+    
+    # Need to define matching fields for functions!
+    study_items = graphene.List(StudyItemType)
+    study_items_by_user = graphene.List(StudyItemType, userId=graphene.Int())
 
     # Function name must be of the form 'resolve_{variable}' to work!
     def resolve_words(self, info, **kwargs):
@@ -98,10 +120,26 @@ class Query(graphene.ObjectType):
     def resolve_users(self, info, **kwargs):
         return User.objects.all()
 
+    def resolve_user(self, info, **kwargs):
+        id = kwargs.get('id')
+        return User.objects.filter(id=id)
+
+    def resolve_study_items(self, info):
+        return StudyItem.objects.all()
+
+    def resolve_study_items_by_user(self, info, **kwargs):
+        userId = kwargs.get('userId')
+        user = User.objects.filter(id=userId)[0]
+        print(StudyItem.objects.filter(user=user))
+        return StudyItem.objects.filter(user=user)
+
 class Mutation(graphene.ObjectType):
     create_word = CreateVocabItem.Field()
     create_user = CreateUser.Field()
+    create_study_item = CreateStudyItem.Field()
+
     delete_word = DeleteVocabItem.Field()
     update_word = UpdateVocabItem.Field()
+    
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
