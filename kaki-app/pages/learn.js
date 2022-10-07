@@ -1,59 +1,98 @@
-import styles from '../styles/Home.module.css'
+import styles from '../styles/Learn.module.css'
 import Pitch from "../components/pitch";
 import 'underscore'
 
 import React, { useState, useCallback, useEffect } from "react";
 import { useQuery, useMutation, gql } from "@apollo/client";
 
+// Stipulate user for now
+const userId = 1
+
+
+// States: List of words, answer the user has chosen
+
 const VOCAB_QUERY = gql`
-{
-  words {
-    id
-    tango
-    yomi
-    pitch
-    learned
-  }
+query StudyItemsByUser($userId: Int!) {
+    studyItemsByUser(userId: $userId) {
+        priority
+        item {
+            tango
+            yomi
+            pitch
+        }
+    }
 }`
 
+/* Things to look into: Children, context, redux? */
+
+function getRandomWord(words) {
+    return words.pop().item;
+}
+
 function Learn() {
-    
-    const { data, loading, error } = useQuery(VOCAB_QUERY);
-    
+
+    const { data, loading, error } = useQuery(VOCAB_QUERY, {
+        variables: {userId}
+    });
+
+    const [currentWord, setCurrentWord] = useState(null);
+
     if (loading) return "Loading...";
     if (error)   return <pre>{error.message}</pre>;
+    
+    let words = fisherYates(data.studyItemsByUser);
+
+    if (currentWord == null) {
+        setCurrentWord(getRandomWord(words));
+    }
+
+    let answerList = [];
+    if(currentWord) {
+        let morae = getMorae(currentWord.yomi);
+    
+        let multiChoice = [];
+        let correctAnswer;
+
+        for(let i=0; i < morae.length+1; i++) {
+            let answer = { 
+                tango: currentWord.tango,
+                yomi: currentWord.yomi,
+                pitch: i,
+                correct: (i == currentWord.pitch ? true : false)
+            };
+
+            if( i != currentWord.pitch) {
+                multiChoice.push(answer);
+            } else {
+                correctAnswer = answer;
+            }
+        }
+
+        multiChoice = fisherYates(multiChoice).filter((word) => {
+            if(word.pitch != 0 && ["っ","ー"].includes(word.yomi[word.pitch-1])) {
+                return false;
+            }
+            return true;
+        });
+
+        if(multiChoice.length > 3) {
+            multiChoice = multiChoice.slice(0, 3);
+        }
+        multiChoice.push(correctAnswer);
+        answerList = multiChoice;
+    }
+
 
     return(
         <main className={styles.content}>
-            <StudyCard words={data.words}/>
+            <section className={styles.studyCard}>
+                <div className={styles.studyItem}>
+                    <p>正しい発音を選択しなさい。</p>
+                    <h2 className={styles.tango}>{currentWord?.tango}</h2>
+                    <ButtonGrid currentWord={currentWord} wordList={words} answerList={answerList} setCurrentWord={setCurrentWord} />
+                </div>
+            </section>
         </main>
-    );
-}
-
-function getRandomWord(words) {
-    let rand = Math.floor(Math.random() * words.length);
-    return words[rand];
-}
-
-const StudyCard = (props) => {
-
-    const [randomWord, setRandomWord] = useState(getRandomWord(props.words));
-
-    return(
-        <section className={styles.studyCard}>
-            <StudyItem word={randomWord} words={props.words} setRandomWord={setRandomWord}/>
-        </section>
-    )
-}
-
-const StudyItem = (props) => {
-
-    return(
-        <div className={styles.studyItem}>
-            <p>正しい発音を選択しなさい。</p>
-            <h2 className={styles.tango}>{props.word.tango}</h2>
-            <ButtonGrid word={props.word} words={props.words} setRandomWord={props.setRandomWord}/>
-        </div>
     );
 }
 
@@ -68,64 +107,69 @@ function fisherYates(arr) {
     return shuffled;
 }
 
-const ButtonGrid = (props) => {
-
-    let [answers, setAnswers]   = useState([]);
-    let [answered, setAnswered]   = useState(false);
-
-    if( answers.length == 0 ) {
-        let numPitches = props.word.yomi.split('').length + 1;
-        let multiChoice = []
-        
-        for(let i=0; i<numPitches; i++) {
-            multiChoice.push({ 
-                tango: props.word.tango,
-                yomi: props.word.yomi,
-                pitch: i,
-                correct: (i == props.word.pitch ? true : false)
-            });
+// TODO: Currently duplicated in pitch.js
+const getMorae = (word) => {
+    
+    let chars = word.split('');
+    let morae = [];
+    let currentMora = chars.shift();
+  
+    for(let i in chars) {
+        if(['ゃ','ゅ','ょ'].includes(chars[i])) {
+            currentMora += chars[i];
+        } else {
+            morae.push(currentMora);
+            currentMora = chars[i];
         }
-        multiChoice = fisherYates(multiChoice);
-        if(multiChoice.length > 4) {
-            multiChoice = multiChoice.slice(0, 4);
-        }
-        setAnswers(multiChoice);
     }
+    morae.push(currentMora);
+    return morae;
+}
+
+const ButtonGrid = ( {currentWord, wordList, answerList, setCurrentWord} ) => {
+
+    const [answered,   setAnswered]   = useState(false);
 
     return(
         <div className={styles.buttonGrid}>
-            {answers.map((option) => 
-            <AnswerButton word={option} answered={answered} setAnswered={setAnswered} setAnswers={setAnswers} words={props.words} setRandomWord={props.setRandomWord}/>)}
+            {answerList.map((option, i) =>             
+            <AnswerButton key={"button" + i} answered={answered} word={option} words={wordList} setRandomWord={setCurrentWord} setAnswered={setAnswered}/>)}
         </div>
     );
 
 }
 
-const AnswerButton = (props) => {
-    let [status, setStatus] = useState('');
+const AnswerButton = ( { word, words, answered, setRandomWord, setAnswered } ) => {
+    const [status, setStatus] = useState('');
 
-    if(props.answered && status == '') {
-        if(props.word.correct) {
+    if(answered && status == '') {
+        if(word.correct) {
             setStatus('correct');
         }
     }
 
+    function handleClick(e) {
+        e.preventDefault();
+        
+        if(!answered) {
+            setAnswered(true);
+        }
+
+        if(!word.correct) {
+            setStatus('incorrect');
+        }
+
+        setTimeout(() => {
+            setRandomWord(getRandomWord(words));
+            setAnswered(false);
+            setStatus('');
+        }, 3000);
+    }
+
     return (
-        <button className={styles[status]} onClick={e => {
-            e.preventDefault();
-            if(!props.answered) {
-                props.setAnswered(true);
-            }
-            if(!props.word.correct) {
-                setStatus('incorrect');
-            }
-            setTimeout(() => {
-                props.setRandomWord(getRandomWord(props.words));
-                props.setAnswered(false);
-                props.setAnswers([]);
-            }, 5000);
-        }}>
-        <Pitch word={props.word} /></button>
+        <button disabled={answered} className={styles[status]} onClick={handleClick}>
+            <Pitch word={word} />
+        </button>
     );
 }
 

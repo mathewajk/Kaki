@@ -1,18 +1,3 @@
-.content {
-  width: 100%;
-  height: 100%;
-
-  padding: 2em;
-  margin: 0px;
-  font-size: 20px;
-
-  
-  color: #2f2f6e;
-  
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
 .code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
@@ -49,22 +34,6 @@
   color: coral;
 }
 
-.mora {
-  position: relative;
-}
-
-.mora[data-pitch="peak"] {
-  color: orangered;
-}
-
-.mora[data-pitch="high"]::before {
-  content: "";
-  position: absolute;
-  height: 3px;
-  width: 1em;
-  background-color: #330D00;
-}
-
 .wordCard[data-learned="true"] .mora[data-pitch="high"]::before {
   background-color: grey;
 }
@@ -75,23 +44,6 @@
 
 .wordCard[data-learned="true"] .mora[data-pitch="peak"] {
   color: rgb(195, 195, 195);
-}
-
-.mora[data-pitch="peak"]::before {
-  content: "";
-  position: absolute;
-  height: 3px;
-  width: 1em;
-  background-color: orangered;
-}
-
-.mora[data-pitch="peak"]::after {
-  content: "";
-  position: absolute;
-  left: 0.9em;
-  height: 0.5em;
-  width: 3px;
-  background-color: orangered;
 }
 
 .learned::after {
@@ -145,45 +97,6 @@ button.deleteWord, button.editWord {
 
   height: 100%;
   width: 100%;
-}
-
-.pitchDisplay {
-  margin-bottom: 1em;
-}
-
-.studyCard {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.studyItem h2 {
-  font-size: 4em;
-}
-
-.studyItem {
-  width: 50%;
-  text-align: center;
-}
-
-.studyItem .buttonGrid button.correct {
-  background-color:rgb(192, 233, 112);
-}
-.studyItem .buttonGrid button.incorrect {
-  background-color: rgb(238, 156, 105);
-}
-
-
-.buttonGrid {
-  display: grid;
-  grid-template-columns: repeat(var(--column-count), 1fr); /*define var() for num of colums; 1fr - one column per var amount*/
-  --column-count: 2; /* Can adjust with media query */
-  gap: 1em;
-}
-.studyItem .buttonGrid button {
-  background-color: rgb(232, 242, 204);
-  color:#2f2f6e;
-  font-weight: 300;
 }
 
 .dialogPanel {
