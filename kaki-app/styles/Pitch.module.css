@@ -1,0 +1,58 @@
+.mora {
+    position: relative;
+  }
+  
+.pitchDisplay {
+    position: relative;
+    display: block;
+    margin-bottom: 1em;
+}
+
+.mora::before, .mora::after {
+    content: "";
+    position: absolute;
+    top: -0.1em;
+}
+
+.mora::before {
+    height: 3px;
+    width: 1em;
+}
+
+.mora[data-characters="2"]::before {
+    height: 3px;
+    width: 2em;
+}
+
+.mora[data-pitch="high"]::before {
+    background-color: #330D00;
+}
+
+.mora[data-pitch="peak"]::before, .mora[data-pitch="peak"]::after {
+    background-color: orangered;
+}
+  
+.mora[data-pitch="peak"]::after {
+    height: 0.5em;
+    width: 3px;
+    left: 0.85em;
+}
+
+.mora[data-pitch="peak"][data-characters="2"]::after {
+    left: 1.85em;
+}
+
+.mora[data-pitch="peak"] {
+    color: orangered;
+}
+  
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    word-wrap: normal;
+    border: 0;
+}

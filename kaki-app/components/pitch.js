@@ -1,30 +1,58 @@
-import styles from '../styles/Home.module.css'
+import styles from '../styles/Pitch.module.css'
+
 import React from "react";
+
+// TODO: Currently duplicated in learn.js
+const getMorae = (word) => {
+    
+  let chars = word.split('');
+  let morae = [];
+  let currentMora = chars.shift();
+
+  for(let i in chars) {
+      if(['ゃ','ゅ','ょ'].includes(chars[i])) {
+          currentMora += chars[i];
+      } else {
+          morae.push(currentMora);
+          currentMora = chars[i];
+      }
+  }
+  morae.push(currentMora);
+  return morae;
+}
 
 const Pitch = (props) => {
 
     let word = props.word;
-    console.log(word);
-    console.log(word.yomi);
+
     return (
       <p className={styles.pitchDisplay} style={{"--pitch": word.pitch}}>
-        {word.yomi.split('').map((mora, i) => {
-          if(i == 0) {
-            if(word.pitch == 1)
-              return <span className={styles.mora} key={mora} data-pitch="peak">{mora}</span>
-            else
-              return <span className={styles.mora} key={mora} data-pitch="low">{mora}</span>
-          }
-          else {
-            if (word.pitch == 0)
-              return <span className={styles.mora} key={mora} data-pitch="high">{mora}</span>
-            if(i < word.pitch - 1)
-              return <span className={styles.mora} data-pitch="high">{mora}</span>
-            if (i == word.pitch - 1)
-              return <span className={styles.mora} key={mora} data-pitch="peak">{mora}</span>
-          }
-          return <span className={styles.mora} key={mora} data-pitch="low">{mora}</span>
-        })}
+      
+      {getMorae(word.yomi).map((mora, i) => {
+        
+        let height = "low";
+        
+        /* The first mora can only be either peak pitch (pitch = 1) or low pitch.
+           Subsequent morae are high until the peak is encountered, then low.
+           If there is no peak (pitch = 0), all subsequent morae are high.
+           Sequences like しゃ, しゅ, しょ are considered one mora.
+        */
+
+        if(i == 0) { 
+          height = ( word.pitch == 1 ? "peak" : "low" );
+        } else {
+          if (word.pitch == 0 || i < word.pitch - 1)
+            height = "high"
+          else if (i == word.pitch - 1)
+            height = "peak"
+        }
+
+        let key = i + '_' + mora;
+        let numChars = mora.split('').length;
+        return (<span className={styles.mora} key={key} data-pitch={height} data-characters={numChars}>{mora}</span>);
+
+      })}
+
       <span className={styles["sr-only"]}> - Pitch accent: {word.pitch}</span></p>
     );
   }
