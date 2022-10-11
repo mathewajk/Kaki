@@ -13,14 +13,14 @@
 }
 
 .studyItem {
-    width: 75%;
+    width: 50%;
     text-align: center;
 }
 
 .buttonGrid button.correct:disabled {
     background-color:rgb(192, 233, 112);
 }
-.buttonGrid button.incorrect:disabled {
+.buttonGrid button.incorrect:diabled {
     background-color: rgb(238, 156, 105);
 }
 
