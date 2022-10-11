@@ -2,12 +2,11 @@ import styles from '../styles/Learn.module.css'
 import Pitch from "../components/pitch";
 import 'underscore'
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation, gql } from "@apollo/client";
 
 // Stipulate user for now
 const userId = 1
-
 
 // States: List of words, answer the user has chosen
 
@@ -25,75 +24,43 @@ query StudyItemsByUser($userId: Int!) {
 
 /* Things to look into: Children, context, redux? */
 
-function getRandomWord(words) {
-    return words.pop().item;
+function getNextWord(words) {
+    let word = words.pop();
+    console.log("Got word " + word?.item?.tango);
+    return { word: word?.item, words: words};
 }
 
-function Learn() {
+function generateAnswers(word) {
+   
+    let morae = getMorae(word.yomi);
+    let answers = [];
+    let correctAnswer = {};
 
-    const { data, loading, error } = useQuery(VOCAB_QUERY, {
-        variables: {userId}
+    for(let i=0; i < morae.length+1; i++) {
+        let answer = { 
+            yomi: word.yomi,
+            pitch: i,
+            correct: (i == word.pitch ? true : false)
+        };
+        if( i != word.pitch) {
+            answers.push(answer);
+        } else {
+            correctAnswer = answer;
+        }
+    }
+
+    answers = fisherYates(answers).filter((word) => {
+        let pitchedMora = word.yomi[word.pitch-1];
+        let invalidMorae = ["っ", "ー"];
+        return (word.pitch == 0 || !invalidMorae.includes(pitchedMora));
     });
 
-    const [currentWord, setCurrentWord] = useState(null);
-
-    if (loading) return "Loading...";
-    if (error)   return <pre>{error.message}</pre>;
+    answers = answers.length > 3 ? answers.slice(0, 3) : answers;
     
-    let words = fisherYates(data.studyItemsByUser);
-
-    if (currentWord == null) {
-        setCurrentWord(getRandomWord(words));
-    }
-
-    let answerList = [];
-    if(currentWord) {
-        let morae = getMorae(currentWord.yomi);
+    let randIdx = Math.floor(Math.random() * answers.length);
+    answers.splice(randIdx, 0, correctAnswer);
     
-        let multiChoice = [];
-        let correctAnswer;
-
-        for(let i=0; i < morae.length+1; i++) {
-            let answer = { 
-                tango: currentWord.tango,
-                yomi: currentWord.yomi,
-                pitch: i,
-                correct: (i == currentWord.pitch ? true : false)
-            };
-
-            if( i != currentWord.pitch) {
-                multiChoice.push(answer);
-            } else {
-                correctAnswer = answer;
-            }
-        }
-
-        multiChoice = fisherYates(multiChoice).filter((word) => {
-            if(word.pitch != 0 && ["っ","ー"].includes(word.yomi[word.pitch-1])) {
-                return false;
-            }
-            return true;
-        });
-
-        if(multiChoice.length > 3) {
-            multiChoice = multiChoice.slice(0, 3);
-        }
-        multiChoice.push(correctAnswer);
-        answerList = multiChoice;
-    }
-
-
-    return(
-        <main className={styles.content}>
-            <section className={styles.studyCard}>
-                <div className={styles.studyItem}>
-                    <p>正しい発音を選択しなさい。</p>
-                    <h2 className={styles.tango}>{currentWord?.tango}</h2>
-                    <ButtonGrid currentWord={currentWord} wordList={words} answerList={answerList} setCurrentWord={setCurrentWord} />
-                </div>
-            </section>
-        </main>
-    );
+    return answers;
 }
 
 function fisherYates(arr) {
@@ -126,49 +93,109 @@ const getMorae = (word) => {
     return morae;
 }
 
-const ButtonGrid = ( {currentWord, wordList, answerList, setCurrentWord} ) => {
+function Learn() {
 
-    const [answered,   setAnswered]   = useState(false);
+    const { data, loading, error } = useQuery(VOCAB_QUERY, {
+        variables: {userId}
+    });
+
+    if (loading) return "Loading...";
+    if (error)   return <pre>{error.message}</pre>;
+    
+    console.log("rendering");
+    console.log(data);
+    
+    // Shuffle currently-due words. TODO: Will need to shuffle according to time due?
+    let wordList = fisherYates(data.studyItemsByUser);
+    let initialState = getNextWord(wordList);
 
     return(
-        <div className={styles.buttonGrid}>
-            {answerList.map((option, i) =>             
-            <AnswerButton key={"button" + i} answered={answered} word={option} words={wordList} setRandomWord={setCurrentWord} setAnswered={setAnswered}/>)}
+        <main className={styles.content}>
+            <StudyCard currentWord={initialState.word} wordList={initialState.words}/>
+        </main>
+    );
+}
+
+const StudyCard = ( { currentWord, wordList }) => {
+
+    const [studyState, setStudyState] = useState({word: currentWord, words: wordList});
+    
+    if(studyState.word == null && studyState.words.length == 0) {
+        return(
+            <section className={styles.studyCard}>
+                <div className={styles.studyItem}>
+                    <h2 className={styles.tango}>おめでとうございます！</h2>
+                    <h2 className={styles.tango}>今日の学習が終わりました。</h2>
+                </div>
+            </section>
+        );
+    }
+
+    let answerList = [];
+    if (studyState.word != null) {
+        answerList = generateAnswers(studyState.word);
+    }
+
+    return(
+        <section className={styles.studyCard}>
+            <div className={styles.studyItem}>
+                <p>正しい発音を選択しなさい。</p>
+                <h2 className={styles.tango}>{studyState.word?.tango}</h2>
+                {<ButtonGrid currentWord={studyState.word} wordList={wordList} answerList={answerList} setCurrentWord={setStudyState} />}
+            </div>
+        </section>
+    );
+}
+
+const ButtonGrid = ( { wordList, answerList, setCurrentWord } ) => {
+
+    const [answerState, setAnswerState] = useState('');
+
+    const toNextWord = ( result ) => {
+        setAnswerState(result);
+        setTimeout(() => {
+            setCurrentWord(getNextWord(wordList));
+            setAnswerState('');
+        }, 1000);
+    }
+
+    let feedback = (answerState == "correct" ? "正解！" : "次は頑張ってね！");
+    return(
+        <div className={styles.response}>
+            <p style={{"visibility": (answerState == '' ? "hidden" : "visible")} }>
+                {feedback}
+            </p>
+            <div className={styles.buttonGrid}>
+                {answerList.map((option, i) =>             
+                <AnswerButton key={"button" + i} answerState={answerState} option={option} toNextWord={toNextWord}/>)}
+            </div>
         </div>
     );
 
 }
 
-const AnswerButton = ( { word, words, answered, setRandomWord, setAnswered } ) => {
-    const [status, setStatus] = useState('');
-
-    if(answered && status == '') {
-        if(word.correct) {
-            setStatus('correct');
-        }
+const AnswerButton = ( { option, answerState, toNextWord } ) => {
+    
+    let feedback = '';
+    if(answerState && option.correct) {
+        feedback = "correct";
+    }   
+    else if(!answerState && feedback != '') {
+        feedback = '';
     }
 
-    function handleClick(e) {
-        e.preventDefault();
-        
-        if(!answered) {
-            setAnswered(true);
+    const handleClick = (e) => {
+        e.preventDefault;
+        let result = "correct";
+        if(!option.correct) {
+            result = "incorrect"
         }
-
-        if(!word.correct) {
-            setStatus('incorrect');
-        }
-
-        setTimeout(() => {
-            setRandomWord(getRandomWord(words));
-            setAnswered(false);
-            setStatus('');
-        }, 3000);
+        toNextWord(result);
     }
 
     return (
-        <button disabled={answered} className={styles[status]} onClick={handleClick}>
-            <Pitch word={word} />
+        <button disabled={ (answerState != '' ? true : false) } className={styles[feedback]} onClick={handleClick}>
+            <Pitch word={option} />
         </button>
     );
 }
