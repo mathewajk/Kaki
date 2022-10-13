@@ -2,13 +2,16 @@ from django.db import models
 
 class VocabItem(models.Model):
 
-    tango = models.CharField(max_length=50)
-    yomi  = models.CharField(max_length=50)
-    pitch = models.IntegerField()
-    learned = models.BooleanField(default=False)
+    tango      = models.CharField(default="", max_length=50)
+    yomi       = models.CharField(default="", max_length=50)
+    pitch      = models.IntegerField(default=0)
+    definition = models.CharField(default="", max_length=1000)
+    
+    category   = models.CharField(default="", max_length=50)
+    learned    = models.BooleanField(default=False)
 
     def __str__(self):
-        return "{0} ({1})".format(self.tango, self.yomi)
+        return "{0} ({1} {2})".format(self.tango, self.yomi, self.pitch)
 
 
 class User(models.Model):

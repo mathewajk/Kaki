@@ -1,4 +1,8 @@
 import os
+import environ
+
+env = environ.Env()
+environ.Env.read_env()
 
 """
 Django settings for backend project.
@@ -17,8 +21,8 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-1kfeay@mrqb8^c^vy($$tefhp$(dc4j0(c+v5v$t)*-8j(0^t4')
-DEBUG = os.environ.get('DJANGO_DEBUG', '') != 'False'
+SECRET_KEY = env('DJANGO_SECRET_KEY')
+DEBUG = env('DJANGO_DEBUG')
 
 ALLOWED_HOSTS = ['*']
 
@@ -77,7 +81,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': BASE_DIR / env('DATABASE_NAME'),
     }
 }
 
@@ -113,6 +117,7 @@ USE_I18N = True
 USE_TZ = True
 
 CORS_ORIGIN_WHITELIST = [
+    'https://kaki-backend-production.up.railway.app',
     'http://localhost:3000',
     'http://localhost:8000',
     'http://localhost:8080',
