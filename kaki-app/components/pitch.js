@@ -39,7 +39,7 @@ const Pitch = (props) => {
         */
 
         if(i == 0) { 
-          height = ( word.pitch == 1 ? "peak" : "low" );
+          height = ( word.pitch == 1 ? "peak" : "start" );
         } else {
           if (word.pitch == 0 || i < word.pitch - 1)
             height = "high"
