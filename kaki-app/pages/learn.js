@@ -4,9 +4,11 @@ import 'underscore'
 
 import React, { useState, useCallback, useEffect } from "react";
 import { useQuery, useMutation, gql } from "@apollo/client";
+import { map } from 'underscore';
 
 // Stipulate user for now
-const userId = 1
+const userId = 1;
+const category = "";
 
 
 // States: List of words, answer the user has chosen
@@ -23,77 +25,114 @@ query StudyItemsByUser($userId: Int!) {
     }
 }`
 
+const VOCAB_QUERY_LEVEL = gql`
+query VocabByLevel($category: String!) {
+    vocabByLevel(category: $category) {
+        tango
+        yomi
+        pitch
+    }
+}`
+
 /* Things to look into: Children, context, redux? */
 
 function getRandomWord(words) {
-    return words.pop().item;
+    return words.pop();
 }
 
-function Learn() {
-
-    const { data, loading, error } = useQuery(VOCAB_QUERY, {
-        variables: {userId}
-    });
-
-    const [currentWord, setCurrentWord] = useState(null);
-
-    if (loading) return "Loading...";
-    if (error)   return <pre>{error.message}</pre>;
+const ChooseCategory = ( { setCategory, displayStyle } ) => {
+    const categories = ["N5", "N4", "N3", "N2", "N1"];
     
-    let words = fisherYates(data.studyItemsByUser);
-
-    if (currentWord == null) {
-        setCurrentWord(getRandomWord(words));
+    if(displayStyle == "menu") {
+        return (
+        <div className={styles.menuBottom}>
+            <div className={styles.categoryGrid}>
+        {
+            categories.map((category, i) => {
+            function handleClick(e) {
+                e.preventDefault();
+                setCategory(category);
+            }
+            return <button tag={"catbutton" + i} style={{'background-color': 'rgb(' + (0 + 60 * i) + ', ' + (160 - 20 * i) + ', ' + (180 - 40 * i) + ')'}} onClick={handleClick}>{category}</button>
+            })
+        }
+        </div>
+        </div>
+        );
     }
-
-    let answerList = [];
-    if(currentWord) {
-        let morae = getMorae(currentWord.yomi);
     
-        let multiChoice = [];
-        let correctAnswer;
-
-        for(let i=0; i < morae.length+1; i++) {
-            let answer = { 
-                tango: currentWord.tango,
-                yomi: currentWord.yomi,
-                pitch: i,
-                correct: (i == currentWord.pitch ? true : false)
-            };
-
-            if( i != currentWord.pitch) {
-                multiChoice.push(answer);
-            } else {
-                correctAnswer = answer;
-            }
-        }
-
-        multiChoice = fisherYates(multiChoice).filter((word) => {
-            if(word.pitch != 0 && ["っ","ー"].includes(word.yomi[word.pitch-1])) {
-                return false;
-            }
-            return true;
-        });
-
-        if(multiChoice.length > 3) {
-            multiChoice = multiChoice.slice(0, 3);
-        }
-        multiChoice.push(correctAnswer);
-        answerList = multiChoice;
-    }
-
-
-    return(
+    return (
         <main className={styles.content}>
             <section className={styles.studyCard}>
                 <div className={styles.studyItem}>
-                    <p>正しい発音を選択しなさい。</p>
-                    <h2 className={styles.tango}>{currentWord?.tango}</h2>
-                    <ButtonGrid currentWord={currentWord} wordList={words} answerList={answerList} setCurrentWord={setCurrentWord} />
+                <p>挑戦するレベルを選択してください。</p>
+                <div className={styles.categoryGrid}>
+                {
+                    categories.map((category, i) => {
+                    function handleClick(e) {
+                        e.preventDefault();
+                        setCategory(category);
+                    }
+                    return <button tag={"catbutton" + i} style={{'background-color': 'rgb(' + (0 + 60 * i) + ', ' + (160 - 20 * i) + ', ' + (180 - 40 * i) + ')'}} onClick={handleClick}>{category}</button>
+                    })
+                }
+                </div>
                 </div>
             </section>
         </main>
     );
+}
+
+function Learn() {
+
+    const [category, setCategory] = useState('')
+
+    if (category == '') {
+        return <ChooseCategory setCategory={setCategory}/>
+    }
+    else {
+        return <StudyPage category={category} setCategory={setCategory}/>
+    }
+}
+
+
+function getNextWord(words) {
+    let word = words.pop();
+    console.log("Got word " + word);
+    return { word: word, words: words};
+}
+
+function generateAnswers(word) {
+   
+    let morae = getMorae(word.yomi);
+    let answers = [];
+    let correctAnswer = {};
+
+    for(let i=0; i < morae.length+1; i++) {
+        let answer = { 
+            yomi: word.yomi,
+            pitch: i,
+            correct: (i == word.pitch ? true : false)
+        };
+        if( i != word.pitch) {
+            answers.push(answer);
+        } else {
+            correctAnswer = answer;
+        }
+    }
+
+    answers = fisherYates(answers).filter((word) => {
+        let pitchedMora = word.yomi[word.pitch-1];
+        let invalidMorae = ["っ", "ー"];
+        return (word.pitch == 0 || !invalidMorae.includes(pitchedMora));
+    });
+
+    answers = answers.length > 3 ? answers.slice(0, 3) : answers;
+    
+    let randIdx = Math.floor(Math.random() * answers.length);
+    answers.splice(randIdx, 0, correctAnswer);
+    
+    return answers;
 }
 
 function fisherYates(arr) {
@@ -126,49 +165,114 @@ const getMorae = (word) => {
     return morae;
 }
 
-const ButtonGrid = ( {currentWord, wordList, answerList, setCurrentWord} ) => {
+function StudyPage( {category, setCategory} ) {
 
-    const [answered,   setAnswered]   = useState(false);
+    const { data, loading, error } = useQuery(VOCAB_QUERY_LEVEL, {
+        variables: {category}
+    });
+
+    if (loading) return "Loading...";
+    if (error)   return <pre>{error.message}</pre>;
+    
+    console.log("rendering");
+    console.log(data);
+    
+    // Shuffle currently-due words. TODO: Will need to shuffle according to time due?
+    let wordList = fisherYates(data.vocabByLevel);
+    let initialState = getNextWord(wordList);
 
     return(
-        <div className={styles.buttonGrid}>
-            {answerList.map((option, i) =>             
-            <AnswerButton key={"button" + i} answered={answered} word={option} words={wordList} setRandomWord={setCurrentWord} setAnswered={setAnswered}/>)}
+        <main className={styles.content}>
+            <ChooseCategory setCategory={setCategory} displayStyle={"menu"}/>
+            <StudyCard currentWord={initialState.word} wordList={initialState.words}/>
+        </main>
+    );
+}
+
+const StudyCard = ( { currentWord, wordList }) => {
+
+    const [studyState, setStudyState] = useState({word: currentWord, words: wordList});
+    
+    if(studyState.word == null && studyState.words.length == 0) {
+        return(
+            <section className={styles.studyCard}>
+                <div className={styles.studyItem}>
+                    <h2 className={styles.tango}>おめでとうございます！</h2>
+                    <h2 className={styles.tango}>今日の学習が終わりました。</h2>
+                </div>
+            </section>
+        );
+    }
+
+    let answerList = [];
+    if (studyState.word != null) {
+        answerList = generateAnswers(studyState.word);
+    }
+
+    return(
+        <section className={styles.studyCard}>
+            <div className={styles.studyItem}>
+                {/*<p>正しい発音を選択しなさい。</p>*/}
+                <h2 className={styles.tango}>{studyState.word?.tango}</h2>
+                {<ButtonGrid currentWord={studyState.word} wordList={wordList} answerList={answerList} setCurrentWord={setStudyState} />}
+            </div>
+        </section>
+    );
+}
+
+const ButtonGrid = ( { wordList, answerList, setCurrentWord } ) => {
+
+    const [answerState, setAnswerState] = useState({ clicked: -1, result: ''});
+
+    const toNextWord = ( result, i ) => {
+        setAnswerState({ clicked: i, result: result });
+        setTimeout(() => {
+            setCurrentWord(getNextWord(wordList));
+            setAnswerState({ clicked: -1, result: ''});
+        }, 1500);
+    }
+
+    let feedback = (answerState.result == "correct" ? "正解！" : "次は頑張ってね！");
+    return(
+        <div className={styles.response}>
+            <p style={{"visibility": (answerState.clicked == -1 ? "hidden" : "visible")} }>
+                {feedback}
+            </p>
+            <div className={styles.buttonGrid}>
+                {answerList.map((option, i) =>             
+                <AnswerButton key={"button" + i} i={i} answerState={answerState} option={option} toNextWord={toNextWord}/>)}
+            </div>
         </div>
     );
 
 }
 
-const AnswerButton = ( { word, words, answered, setRandomWord, setAnswered } ) => {
-    const [status, setStatus] = useState('');
+const AnswerButton = ( { i, option, answerState, toNextWord } ) => {
+    
+    let feedback = '';
+    console.log(answerState.clicked);
 
-    if(answered && status == '') {
-        if(word.correct) {
-            setStatus('correct');
+    if(answerState.clicked >= 0) {
+        if (option.correct) {
+            feedback = "correct";
         }
-    }
-
-    function handleClick(e) {
-        e.preventDefault();
-        
-        if(!answered) {
-            setAnswered(true);
+        else if (i == answerState.clicked && !option.correct) {
+            feedback = "incorrect";
         }
+    } 
 
-        if(!word.correct) {
-            setStatus('incorrect');
+    const handleClick = (e) => {
+        e.preventDefault;
+        let result = "correct";
+        if(!option.correct) {
+            result = "incorrect"
         }
-
-        setTimeout(() => {
-            setRandomWord(getRandomWord(words));
-            setAnswered(false);
-            setStatus('');
-        }, 3000);
+        toNextWord(result, i);
     }
 
     return (
-        <button disabled={answered} className={styles[status]} onClick={handleClick}>
-            <Pitch word={word} />
+        <button disabled={ (feedback != '' ? true : false) } className={styles[feedback]} onClick={handleClick}>
+            <Pitch word={option} />
         </button>
     );
 }
