@@ -153,6 +153,7 @@ class Query(graphene.ObjectType):
     # Need to define matching fields for functions!
     study_items = graphene.List(StudyItemType)
     study_items_by_user = graphene.List(StudyItemType, userId=graphene.Int())
+    vocab_by_level = graphene.List(VocabType, category=graphene.String())
 
     # Function name must be of the form 'resolve_{variable}' to work!
     def resolve_words(self, info, **kwargs):
@@ -170,9 +171,15 @@ class Query(graphene.ObjectType):
 
     def resolve_study_items_by_user(self, info, **kwargs):
         userId = kwargs.get('userId')
-        user = User.objects.filter(id=userId)[0]
-        print(StudyItem.objects.filter(user=user))
-        return StudyItem.objects.filter(user=user)
+        user = User.objects.filter(id=userId)
+        if not user:
+            return
+        return StudyItem.objects.filter(user=user[0])
+
+    def resolve_vocab_by_level(self, info, **kwargs):
+        category = kwargs.get('category')
+        return VocabItem.objects.filter(category=category)
+
 
 class Mutation(graphene.ObjectType):
     create_word = CreateVocabItem.Field()
