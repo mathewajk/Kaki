@@ -9,7 +9,8 @@ const client = new ApolloClient({
 function MyApp({ Component, pageProps }) {
   return (
     <ApolloProvider client={client}>
-    <Component {...pageProps} />
+      <div className={"menuTop"}><img src="/kaki.png" width="25px"></img> <h2>Kaki</h2></div>
+      <Component {...pageProps} />
     </ApolloProvider>
   );
 }

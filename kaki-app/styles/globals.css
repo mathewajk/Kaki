@@ -3,6 +3,9 @@
 
 html,
 body {
+  width: 100%;
+  height: 100%;
+  
   font-family: 'M PLUS Rounded 1c', sans-serif;
   background-color: #fffdf5;
   padding: 0;
@@ -28,10 +31,31 @@ a {
   }
 }
 
-main {
+button {
+  padding: 1em;
+  border: none;
+  background-color: orangered;
+  color: #fffdf5;
+  font-weight: bold;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: rgb(236, 112, 67);
+}
+
+#__next {
   width: 100%;
   height: 100%;
+}
 
+main {
+  
+  width: 100%;
+  height: 100%;
+  
   padding: 2em;
   margin: 0px;
   font-size: 20px;
@@ -41,4 +65,19 @@ main {
   
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.menuTop {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  top: 10px;
+  left: 0;
+  margin-left: 1em;
+  font-size: 1em;
+  color: rgb(233, 141, 12);
+}
+
+.menuTop h2 {
+  margin: 0px;
 }
