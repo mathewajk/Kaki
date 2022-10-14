@@ -175,9 +175,6 @@ function StudyPage( {category, setCategory} ) {
     if (loading) return "Loading...";
     if (error)   return <pre>{error.message}</pre>;
     
-    console.log("rendering");
-    console.log(data);
-    
     // Shuffle currently-due words. TODO: Will need to shuffle according to time due?
     let wordList = fisherYates(data.vocabByLevel);
     let initialState = getNextWord(wordList);
@@ -192,7 +189,11 @@ function StudyPage( {category, setCategory} ) {
 
 const StudyCard = ( { currentWord, wordList }) => {
 
-    const [studyState, setStudyState] = useState({word: currentWord, words: wordList});
+    const [studyState, setStudyState] = useState({word: currentWord, words: wordList});;
+
+    if(wordList != studyState.words) {
+        setStudyState( {word: currentWord, words: wordList});
+    }
     
     if(studyState.word == null && studyState.words.length == 0) {
         return(
