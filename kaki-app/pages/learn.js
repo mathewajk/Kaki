@@ -31,6 +31,7 @@ query VocabByLevel($category: String!) {
         tango
         yomi
         pitch
+        definition
     }
 }`
 
@@ -212,11 +213,29 @@ const StudyCard = ( { currentWord, wordList }) => {
     return(
         <section className={styles.studyCard}>
             <div className={styles.studyItem}>
-                {/*<p>正しい発音を選択しなさい。</p>*/}
                 <h2 className={styles.tango}>{studyState.word?.tango}</h2>
+                <Definition word={studyState.word} />
                 {<ButtonGrid currentWord={studyState.word} wordList={wordList} answerList={answerList} setCurrentWord={setStudyState} />}
             </div>
         </section>
+    );
+}
+
+const Definition = ( { word } ) => {
+    const [visible, setVisible] = useState(false);
+    
+    function handleClick(e) {
+        e.preventDefault();
+        setVisible(!visible);
+    }
+
+    let text = visible ? "定義を非表示する" : "定義を表示する";
+ 
+    return(
+        <div>
+            <button onClick={handleClick}>{text}</button>
+                <p style={{visibility: (visible ? "visible" : "hidden")}}>{word.definition}</p>
+        </div>
     );
 }
 
@@ -235,13 +254,13 @@ const ButtonGrid = ( { wordList, answerList, setCurrentWord } ) => {
     let feedback = (answerState.result == "correct" ? "正解！" : "次は頑張ってね！");
     return(
         <div className={styles.response}>
-            <p style={{"visibility": (answerState.clicked == -1 ? "hidden" : "visible")} }>
-                {feedback}
-            </p>
             <div className={styles.buttonGrid}>
                 {answerList.map((option, i) =>             
                 <AnswerButton key={"button" + i} i={i} answerState={answerState} option={option} toNextWord={toNextWord}/>)}
             </div>
+            <p style={{"visibility": (answerState.clicked == -1 ? "hidden" : "visible")} }>
+                {feedback}
+            </p>
         </div>
     );
 
