@@ -16,29 +16,29 @@
 }
 
 .mora::before {
-    height: 3px;
-    left: -0.1em;
+    height: 0.2em;
+    left: -0.2em;
     width: 1.2em;
 }
 
 .mora[data-pitch="low"]::before, .mora[data-pitch="start"]::before {
-    height: 3px;
-    left: -0.1em;
-    width: 1.2em;
+    height: 0.2em;
+    left: -0.2em;
+    width: 1.4em;
     top: 1.5em;
     background-color: #330D00;
 }
 
 .mora[data-pitch="start"]::after {
     height: 1.75em;
-    width: 3px;
+    width: 0.2em;
+    right: -0.2em;
     background-color: #330D00;
 }
 
-
 .mora[data-characters="2"]::before {
-    height: 3px;
-    width: 2.2em;
+    height: 0.2em;
+    width: 2.4em;
 }
 
 .mora[data-pitch="high"]::before {
@@ -51,7 +51,7 @@
   
 .mora[data-pitch="peak"]::after {
     height: 1.75em;
-    width: 3px;
+    width: 0.2em;
     left: 1em;
 }
 
