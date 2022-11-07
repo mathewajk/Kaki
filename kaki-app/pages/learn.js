@@ -258,9 +258,9 @@ const ButtonGrid = ( { wordList, answerList, setCurrentWord } ) => {
                 {answerList.map((option, i) =>             
                 <AnswerButton key={"button" + i} i={i} answerState={answerState} option={option} toNextWord={toNextWord}/>)}
             </div>
-            <p style={{"visibility": (answerState.clicked == -1 ? "hidden" : "visible")} }>
-                {feedback}
-            </p>
+            <div className={styles.feedback} style={{"visibility": (answerState.clicked == -1 ? "hidden" : "visible")} }>
+                <p>{feedback}</p>
+            </div>
         </div>
     );
 
