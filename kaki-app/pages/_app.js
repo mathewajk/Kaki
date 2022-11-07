@@ -3,7 +3,7 @@ import { ApolloProvider, ApolloClient, InMemoryCache } from "@apollo/client";
 import Image from "next/image";
 
 const client = new ApolloClient({
-  uri: 'http://localhost:8000/graphql',
+  uri: process.env.GRAPHQL,
   cache: new InMemoryCache()
 });
 
