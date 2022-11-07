@@ -129,7 +129,9 @@ USE_I18N = True
 USE_TZ = True
 
 CORS_ORIGIN_WHITELIST = [
-    'https://kaki-backend-production.up.railway.app',
+    'https://kaki-backend.up.railway.app',
+    'https://kaki-eta.vercel.app',
+    'https://kaki-narquelion.vercel.app',
     'http://localhost:3000',
     'http://localhost:8000',
     'http://localhost:8080',
