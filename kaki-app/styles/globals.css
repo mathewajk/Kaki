@@ -67,6 +67,12 @@ main {
   -moz-osx-font-smoothing: grayscale;
 }
 
+@media (prefers-color-scheme: dark) {
+    main {
+    color:  #b8b8db;
+  }
+}
+
 .menuTop {
   position: absolute;
   display: flex;

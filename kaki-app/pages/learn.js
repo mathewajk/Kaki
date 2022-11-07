@@ -54,7 +54,7 @@ const ChooseCategory = ( { setCategory, displayStyle } ) => {
                 e.preventDefault();
                 setCategory(category);
             }
-            return <button tag={"catbutton" + i} style={{'background-color': 'rgb(' + (0 + 60 * i) + ', ' + (160 - 20 * i) + ', ' + (180 - 40 * i) + ')'}} onClick={handleClick}>{category}</button>
+            return <button key={"cat-button-" + i} tag={"cat-button-" + i} style={{'background-color': 'rgb(' + (0 + 60 * i) + ', ' + (160 - 20 * i) + ', ' + (180 - 40 * i) + ')'}} onClick={handleClick}>{category}</button>
             })
         }
         </div>
@@ -74,7 +74,7 @@ const ChooseCategory = ( { setCategory, displayStyle } ) => {
                         e.preventDefault();
                         setCategory(category);
                     }
-                    return <button tag={"catbutton" + i} style={{'background-color': 'rgb(' + (0 + 60 * i) + ', ' + (160 - 20 * i) + ', ' + (180 - 40 * i) + ')'}} onClick={handleClick}>{category}</button>
+                    return <button key={"cat-button-" + i} tag={"cat-button-" + i} style={{'background-color': 'rgb(' + (0 + 60 * i) + ', ' + (160 - 20 * i) + ', ' + (180 - 40 * i) + ')'}} onClick={handleClick}>{category}</button>
                     })
                 }
                 </div>
