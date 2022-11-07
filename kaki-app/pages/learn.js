@@ -10,8 +10,7 @@ import { map } from 'underscore';
 const userId = 1;
 const category = "";
 
-
-// States: List of words, answer the user has chosen
+// States: List of words (database query), answer the user has chosen (user input)
 
 const VOCAB_QUERY = gql`
 query StudyItemsByUser($userId: Int!) {
@@ -194,7 +193,7 @@ const StudyCard = ( { currentWord, wordList }) => {
     if(wordList != studyState.words) {
         setStudyState( {word: currentWord, words: wordList});
     }
-    
+
     if(studyState.word == null && studyState.words.length == 0) {
         return(
             <section className={styles.studyCard}>
