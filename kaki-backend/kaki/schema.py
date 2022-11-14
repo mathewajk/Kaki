@@ -5,7 +5,7 @@ from kaki.models import VocabItem, User, StudyItem
 class VocabType(DjangoObjectType):
     class Meta:
         model = VocabItem
-        fields = ('id', 'tango', 'yomi', 'pitch', 'definition', 'category', 'learned')
+        fields = ('id', 'tango', 'yomi', 'pitch', 'pos', 'definition', 'category', 'learned')
 
 class UserType(DjangoObjectType):
     class Meta:
@@ -59,7 +59,8 @@ class CreateVocabItem(graphene.Mutation):
     class Arguments:
         tango      = graphene.String()
         yomi       = graphene.String()
-        pitch      = graphene.Int()
+        pos        = graphene.String()
+        pitch      = graphene.Int() 
         definition = graphene.String()
         category   = graphene.String()
 
@@ -67,11 +68,11 @@ class CreateVocabItem(graphene.Mutation):
     word = graphene.Field(VocabType)
 
     # Should default learned to false?
-    def mutate(self, info, tango, yomi, pitch, definition, category):
+    def mutate(self, info, tango, yomi, pitch, pos, definition, category):
         exists = VocabItem.objects.filter(tango=tango)
         if exists:
             return CreateVocabItem(ok=False, word=None)
-        word = VocabItem(tango=tango, yomi=yomi, pitch=pitch, definition=definition, category=category, learned=False)
+        word = VocabItem(tango=tango, yomi=yomi, pitch=pitch, pos=pos, definition=definition, category=category, learned=False)
         word.save()
         return CreateVocabItem(ok=True, word=word)
 
@@ -89,25 +90,27 @@ class DeleteVocabItem(graphene.Mutation):
 
 class UpdateVocabItem(graphene.Mutation):
     class Arguments:
-        id = graphene.Int()
-        tango   = graphene.String()
-        yomi    = graphene.String()
-        pitch   = graphene.Int()
-        learned = graphene.Boolean()
+        id         = graphene.Int()
+        tango      = graphene.String()
+        yomi       = graphene.String()
+        pitch      = graphene.Int()
+        learned    = graphene.Boolean()
         definition = graphene.String()
-        category = graphene.String()
+        category   = graphene.String()
 
     ok = graphene.Boolean()
     word = graphene.Field(VocabType)
 
-    def mutate(self, info, id, tango, yomi, pitch, learned, definition, category): 
-        word = VocabItem.objects.get(id=id)
-        word.tango = tango
-        word.yomi = yomi
-        word.pitch = pitch
-        word.learned = learned
+    def mutate(self, info, id, tango, yomi, pitch, pos, learned, definition, category): 
+        word            = VocabItem.objects.get(id=id)
+        word.tango      = tango
+        word.yomi       = yomi
+        word.pos        = pos
+        word.pitch      = pitch
+        word.learned    = learned
         word.definition = definition
-        word.category = category
+        word.category   = category
+
         word.save()
         return UpdateVocabItem(ok=True, word=word)
 
@@ -116,6 +119,7 @@ class UpdateVocabItemFromWord(graphene.Mutation):
     class Arguments:
         tango      = graphene.String()
         yomi       = graphene.String()
+        pos        = graphene.String()
         pitch      = graphene.Int()
         definition = graphene.String()
         category   = graphene.String()
@@ -123,7 +127,7 @@ class UpdateVocabItemFromWord(graphene.Mutation):
     ok = graphene.Boolean()
     word = graphene.Field(VocabType)
 
-    def mutate(self, info, tango, yomi, pitch, definition, category): 
+    def mutate(self, info, tango, yomi, pitch, pos, definition, category): 
         
         try:
             word = VocabItem.objects.get(tango=tango)
@@ -137,6 +141,7 @@ class UpdateVocabItemFromWord(graphene.Mutation):
         word.tango = tango
         word.yomi = yomi
         word.pitch = pitch
+        word.pos = pos
         word.definition = definition
         word.learned = False
         word.category = category

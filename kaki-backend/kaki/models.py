@@ -4,7 +4,10 @@ class VocabItem(models.Model):
 
     tango      = models.CharField(default="", max_length=50)
     yomi       = models.CharField(default="", max_length=50)
+    pos        = models.CharField(default="", max_length=50)
+
     pitch      = models.IntegerField(default=0)
+
     definition = models.CharField(default="", max_length=1000)
     
     category   = models.CharField(default="", max_length=50)
