@@ -1,10 +1,13 @@
 import styles from '../styles/Learn.module.css'
 import Pitch from "../components/pitch";
-import 'underscore'
+import Next from "next";
+
+import { useSession, signIn, signOut } from "next-auth/react";
+//import { unstable_getServerSession } from "next-auth/next";
+//import { authOptions } from "./auth/[...nextauth]";
 
 import React, { useState, useCallback, useEffect } from "react";
 import { useQuery, useMutation, gql } from "@apollo/client";
-import { map } from 'underscore';
 
 // Stipulate user for now
 const userId = 1;
@@ -85,14 +88,28 @@ const ChooseCategory = ( { setCategory, displayStyle } ) => {
 
 function Learn() {
 
-    const [category, setCategory] = useState('')
-
-    if (category == '') {
-        return <ChooseCategory setCategory={setCategory}/>
-    }
-    else {
-        return <StudyPage category={category} setCategory={setCategory}/>
-    }
+    const [category, setCategory] = useState('');
+    const { data: session } = useSession();
+    
+    if (session) { 
+        return (
+            <>
+                Signed in as {session.user.email} <br />
+                <button onClick={() => signOut()}>Sign out</button>
+                <ChooseCategory setCategory={setCategory}/>
+            </>
+        ); 
+    } 
+    
+    return (
+        <main className={styles.content}>
+            <div className={styles.studyCard}>
+                Not signed in!
+                <br />
+                <button onClick={() => signIn()}>Sign in</button>
+                <StudyPage category={category} setCategory={setCategory}/>
+            </div>
+        </main>);
 }
 
 
