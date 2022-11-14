@@ -6,6 +6,9 @@ __pycache__
 db.sqlite3
 media
 
+kakidb
+datadump.json
+
 # Mac OS
 __MACOSX
 .DS_Store
