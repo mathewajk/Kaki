@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('kaki', '0001_initial'),
+        ('kaki', '0006_vocabitem_category_vocabitem_definition_and_more'),
     ]
 
     operations = [
