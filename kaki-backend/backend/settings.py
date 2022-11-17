@@ -31,16 +31,94 @@ ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'kaki',
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    "whitenoise.runserver_nostatic", 
-    "django.contrib.staticfiles",
+    'django.contrib.sites',
+    'django.contrib.staticfiles',
+
+    'whitenoise.runserver_nostatic', 
+
     'corsheaders',
     'rest_framework',
+    'rest_framework.authtoken',
+    
+    # authentication
+    'dj_rest_auth',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'dj_rest_auth.registration',
+
     'graphene_django'
+]
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'email',
+            'profile'
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    }
+}
+
+# we are turning off email verification for now
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
+SOCIALACCOUNT_EMAIL_REQUIRED = False
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+ACCOUNT_AUTHENTICATION_METHOD = "username_email"
+
+SITE_ID = 3 # https://dj-rest-auth.readthedocs.io/en/latest/installation.html#registration-optional
+REST_USE_JWT = True # use JSON Web Tokens
+# JWT_AUTH_COOKIE = "nextjsdrf-access-token"
+# JWT_AUTH_REFRESH_COOKIE = "nextjsdrf-refresh-token"
+# JWT_AUTH_SAMESITE = "none"
+
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=5),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True, 
+    'UPDATE_LAST_LOGIN': True,
+    "USER_ID_FIELD": "userId",  # for the custom user model
+    "USER_ID_CLAIM": "user_id",
+    "SIGNING_KEY": env('JWT_SECRET_KEY')
+}
+
+# custom user model, because we do not want to use the Django provided user model
+AUTH_USER_MODEL = "kaki.UserAccount"
+# We need to specify the exact serializer as well for dj-rest-auth, otherwise it will end up shooting itself
+# in the foot and me in the head
+REST_AUTH_SERIALIZERS = {
+    'USER_DETAILS_SERIALIZER': 'kaki.serializers.UserAccountSerializer'
+}
+
+# Password validation
+# https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
+
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
 ]
 
 MIDDLEWARE = [
@@ -57,6 +135,19 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'backend.urls'
+
+# set up the authentication classes
+REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.IsAuthenticated",
+    ),
+
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework.authentication.BasicAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+        "dj_rest_auth.utils.JWTCookieAuthentication",
+    ),
+}
 
 TEMPLATES = [
     {
@@ -134,16 +225,18 @@ CORS_ORIGIN_WHITELIST = [
     'https://kaki-narquelion.vercel.app',
     'http://localhost:3000',
     'http://localhost:8000',
-    'http://localhost:8080',
     "http://127.0.0.1:3000",
     "http://127.0.0.1:8000",
-    "http://127.0.0.1:8080"
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     'https://kaki-backend.up.railway.app',
     'https://kaki-eta.vercel.app',
-    'https://kaki-narquelion.vercel.app'
+    'https://kaki-narquelion.vercel.app',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:8000',
+    'http://localhost:3000',
+    'http://localhost:8000'
 ]
 
 # Static files (CSS, JavaScript, Images)

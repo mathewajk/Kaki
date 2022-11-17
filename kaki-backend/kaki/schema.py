@@ -1,6 +1,6 @@
 import graphene
 from graphene_django import DjangoObjectType
-from kaki.models import VocabItem, User, StudyItem
+from kaki.models import VocabItem, User, UserAccount, StudyItem
 
 class VocabType(DjangoObjectType):
     class Meta:
@@ -11,6 +11,11 @@ class UserType(DjangoObjectType):
     class Meta:
         model = User
         fields = ('id', 'name')
+
+class UserAccountType(DjangoObjectType):
+    class Meta:
+        model = UserAccount
+        fields = ('userId', 'username', 'email', 'active')
 
 class StudyItemType(DjangoObjectType):
     class Meta:
@@ -152,8 +157,10 @@ class UpdateVocabItemFromWord(graphene.Mutation):
 class Query(graphene.ObjectType):
     
     words = graphene.List(VocabType)
-    users = graphene.List(UserType)
-    user = graphene.Field(UserType, id=graphene.Int())
+    users = graphene.List(UserAccountType)
+
+    user_by_identifier = graphene.Field(UserAccountType, identifier=graphene.String())
+    user_by_email      = graphene.Field(UserAccountType, email=graphene.String())
     
     # Need to define matching fields for functions!
     study_items = graphene.List(StudyItemType)
@@ -167,9 +174,21 @@ class Query(graphene.ObjectType):
     def resolve_users(self, info, **kwargs):
         return User.objects.all()
 
-    def resolve_user(self, info, **kwargs):
-        id = kwargs.get('id')
-        return User.objects.filter(id=id)
+    def resolve_user_by_identifier(self, info, **kwargs):
+        identifier = kwargs.get('identifier')
+        user = UserAccount.objects.filter(username=identifier)
+        if not user:
+            user = UserAccount.objects.filter(email=identifier)
+        if not user:
+            return
+        return user[0]
+
+    def resolve_user_by_email(self, info, **kwargs):
+        email = kwargs.get('email')
+        user = UserAccount.objects.filter(email=email)
+        if not user:
+            return
+        return user[0]
 
     def resolve_study_items(self, info):
         return StudyItem.objects.all()
