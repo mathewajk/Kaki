@@ -71,7 +71,7 @@ const ChooseCategory = ( { setCategory, displayStyle } ) => {
                         e.preventDefault();
                         setCategory(category);
                     }
-                    return <button key={"cat-button-" + i} tag={"cat-button-" + i} style={{'background-color': 'rgb(' + (0 + 60 * i) + ', ' + (160 - 20 * i) + ', ' + (180 - 40 * i) + ')'}} onClick={handleClick}>{category}</button>
+                    return <button className="py-8 rounded-md" key={"cat-button-" + i} tag={"cat-button-" + i} style={{'background-color': 'rgb(' + (0 + 60 * i) + ', ' + (160 - 20 * i) + ', ' + (180 - 40 * i) + ')'}} onClick={handleClick}>{category}</button>
                     })
                 }
                 </div>
@@ -195,9 +195,8 @@ const StudyCard = ( { currentWord, wordList }) => {
     if(studyState.word == null && studyState.words.length == 0) {
         return(
             <section className={styles.studyCard}>
-                <div className={styles.studyItem}>
-                    <h2 className={styles.tango}>おめでとうございます！</h2>
-                    <h2 className={styles.tango}>今日の学習が終わりました。</h2>
+                <div className="text-2xl">
+                    <h2 className={styles.tango}>おめでとうございます！今日の学習が終わりました。</h2>
                 </div>
             </section>
         );

@@ -5,17 +5,6 @@
 @tailwind components;
 @tailwind utilities;
 
-.menu {
-
-  /*@apply block flex flex-row items-center place-content-center;
-  @apply top-0 left-0 w-full p-4;
-  @apply backdrop-blur-md font-mplus;*/
-
-  background-color: rgba(120, 120, 100, 0.758);
-  background: linear-gradient(45deg,rgba(40, 40, 36, 0.758) 0%, rgba(120, 120, 100, 0.758) 100%);
-  color: white;
-}
-
 html,
 body {
   width: 100%;
@@ -24,7 +13,7 @@ body {
   font-family: 'M PLUS Rounded 1c';
   font-weight: bold;
 
-  background-color: #fdfef6;
+  @apply bg-white dark:bg-gray-800;
   margin: 0;
 }
 
@@ -41,39 +30,42 @@ a {
   html {
     color-scheme: dark;
   }
-  body {
-    color: white;
-    background: black;
-  }
 }
 
 nav {
-  @apply border border-solid border-y-2 ;
-  border-color: rgb(155, 155, 153);
+  @apply bg-white;
+  z-index: 10;
 }
 
-nav a {
-  @apply font-bold;
+nav::after {
+  content: "";
+  position: absolute;
+  @apply w-full h-1 bottom-0 left-0;
+  border-color: rgb(176, 176, 176);
+  background-color: rgba(114, 161, 28, 0.758);
+  background: linear-gradient(45deg, rgba(201, 126, 13, 0.758) 0%, rgba(114, 161, 28, 0.758) 50%);
 }
 
-button, button[type="submit"] {
+button {
+  @apply p-0.5 cursor-pointer rounded-sm;
+}
+
+.kaki-button {
   padding: 0.5em;
-  background-color: rgb(0, 160, 180);
-
-  color: #fffdf5;
+  background-color: rgb(255, 115, 0);
   font-weight: bold;
   border-radius: 5px;
   cursor: pointer;
-  @apply transition shadow-md duration-150 ease-in-out
+  @apply transition text-white shadow-md duration-150 ease-in-out
 }
 
-button:hover, form button[type="submit"]:hover {
-  background-color: rgb(0, 137, 155);
+.kaki-button:hover {
+  background-color: rgb(255, 72, 0);
 }
 
 .color-orangered {
-  color: rgb(255, 115, 0);
-  @apply drop-shadow-lg
+  color: rgb(236, 150, 10);
+  @apply drop-shadow-sm
 }
 
 #__next {

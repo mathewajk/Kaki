@@ -13,9 +13,9 @@ function Home( ) {
       {
         !session && (
           <div className="text-center ">
-          <p className="text-splash color-orangered">Kaki</p>
-          <p className="text-2xl mb-8">Speak Japanese with confidence.</p>
-          <p><button><a href="/login">Sign in</a></button></p>
+          <p className="text-splash color-orangered">カキ</p>
+          <p className="text-2xl mb-8">日本語の発音をマスターしましょう。</p>
+          <p><button className="kaki-button"><a href="/register">始める</a></button></p>
           </div>
         )
       }
@@ -23,7 +23,7 @@ function Home( ) {
       {session && (
         
             <div className="text-center content-center">
-            Welcome, {session.user.name.split(" ")[0]}!
+            ようこそ{session.user.name}様
             </div>
         )
       }
