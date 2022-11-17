@@ -15,7 +15,7 @@ function Home( ) {
           <div className="text-center ">
           <p className="text-splash color-orangered">カキ</p>
           <p className="text-2xl mb-8">発音のマスターになる</p>
-          <p><button className="kaki-button"><a href="/register">始める</a></button></p>
+          <p><button className="kaki-button"><Link href="/register">始める</Link></button></p>
           </div>
         )
       }

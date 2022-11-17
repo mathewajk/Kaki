@@ -16,9 +16,9 @@ const Header = (props) => {
 
         <div className="flex h-10 lg:text-xl md:text-lg font-medium">
             <div className="flex items-center">
-                <a href="/">
-                <img src={'/kaki.png'} className="max-w-none h-4 w-4 md:h-8 md:w-8"></img></a>&nbsp;&nbsp;
-                <a href="/"><h3 className="font-bold">カキ</h3></a>
+                <Link href="/">
+                <img src={'/kaki.png'} className="max-w-none h-4 w-4 md:h-8 md:w-8"></img></Link>&nbsp;&nbsp;
+                <Link href="/"><h3 className="font-bold">カキ</h3></Link>
             </div>
         </div>
 
@@ -41,8 +41,8 @@ const NavLinks = ( {session} ) => {
     <>
         <div className={(isVisible ? "block" : "hidden") + " w-full md:block md:w-auto"}>
             <ul className="flex flex-col items-center lg:text-base mt-4 md:flex-row md:space-x-4 md:mt-0 md:text-sm md:font-medium md:border-0 dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
-                <li className="block py-2 md:p-0"><a className="font-bold p-2 hover:text-orange-500" href="/learn">学ぶ</a></li>
-                <li className="block py-2 md:p-0"><a className="font-bold p-2 hover:text-orange-500" href="/vocab">成績</a></li>
+                <li className="block py-2 md:p-0"><Link className="font-bold p-2 hover:text-orange-500" href="/learn">学ぶ</Link></li>
+                <li className="block py-2 md:p-0"><Link className="font-bold p-2 hover:text-orange-500" href="/vocab">成績</Link></li>
                 {session && (
                     <li className="block py-2 md:p-0">
                     <div className="sr-only">User menu</div>
@@ -63,7 +63,7 @@ const NavLinks = ( {session} ) => {
                             href="#"
                             >
                             設定
-                            </a>
+                            </Link>
                         )}
                         </Menu.Item>
                         <Menu.Item>
@@ -76,14 +76,14 @@ const NavLinks = ( {session} ) => {
                               href="#"
                             >
                             ログアウト
-                            </a>
+                            </Link>
                         )}
                         </Menu.Item>
                     </div>
                     </Menu.Items>
                 </Menu>
                 </li>)}
-                { !session && (<li className="block py-2 pl-3 pr-4 text-white md:bg-transparent md:p-0 dark:text-white"><button className="kaki-button"><a href="/login">ログイン</a></button></li>) }
+                { !session && (<li className="block py-2 pl-3 pr-4 text-white md:bg-transparent md:p-0 dark:text-white"><button className="kaki-button"><Link href="/login">ログイン</Link></button></li>) }
             </ul>
         </div>
         <div className="flex md:hidden">
