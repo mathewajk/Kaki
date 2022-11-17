@@ -1,5 +1,5 @@
 import React from "react";
-import Image from "next/image";
+import Link from 'next/link'
 
 import { Menu } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
@@ -56,7 +56,7 @@ const NavLinks = ( {session} ) => {
                     <div className="px-1 py-1">
                         <Menu.Item>
                         {({ active }) => (
-                            <a
+                            <Link
                             className={`${
                                 active ? 'text-black' : 'text-gray-600'
                               } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
@@ -68,7 +68,7 @@ const NavLinks = ( {session} ) => {
                         </Menu.Item>
                         <Menu.Item>
                         {({ active }) => (
-                            <a
+                            <Link
                             className={`${
                                 active ? 'text-red-600' : 'text-orange-500'
                               } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
