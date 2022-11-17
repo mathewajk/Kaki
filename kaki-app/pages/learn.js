@@ -1,10 +1,5 @@
 import styles from '../styles/Learn.module.css'
 import Pitch from "../components/pitch";
-import Next from "next";
-
-import { useSession, signIn, signOut } from "next-auth/react";
-//import { unstable_getServerSession } from "next-auth/next";
-//import { authOptions } from "./auth/[...nextauth]";
 
 import React, { useState, useCallback, useEffect } from "react";
 import { useQuery, useMutation, gql } from "@apollo/client";
@@ -47,20 +42,20 @@ const ChooseCategory = ( { setCategory, displayStyle } ) => {
     const categories = ["N5", "N4", "N3", "N2", "N1"];
     
     if(displayStyle == "menu") {
-        return (
-        <div className={styles.menuBottom}>
-            <div className={styles.categoryGrid}>
-        {
-            categories.map((category, i) => {
-            function handleClick(e) {
-                e.preventDefault();
-                setCategory(category);
-            }
-            return <button key={"cat-button-" + i} tag={"cat-button-" + i} style={{'background-color': 'rgb(' + (0 + 60 * i) + ', ' + (160 - 20 * i) + ', ' + (180 - 40 * i) + ')'}} onClick={handleClick}>{category}</button>
-            })
-        }
-        </div>
-        </div>
+        return (<></>
+        // <div className={styles.menuBottom}>
+        //     <div className="categoryGrid sm:text-lg md:text-xl lg:text-2xl">
+        // {
+        //     categories.map((category, i) => {
+        //     function handleClick(e) {
+        //         e.preventDefault();
+        //         setCategory(category);
+        //     }
+        //     return <button key={"cat-button-" + i} tag={"cat-button-" + i} className="py-3" style={{'background-color': 'rgb(' + (0 + 60 * i) + ', ' + (160 - 20 * i) + ', ' + (180 - 40 * i) + ')'}} onClick={handleClick}>{category}</button>
+        //     })
+        // }
+        // </div>
+        // </div>
         );
     }
     
@@ -68,7 +63,7 @@ const ChooseCategory = ( { setCategory, displayStyle } ) => {
         <main className={styles.content}>
             <section className={styles.studyCard}>
                 <div className={styles.studyItem}>
-                <p>挑戦するレベルを選択してください。</p>
+                <p className="mb-8">挑戦するレベルを選択してください。</p>
                 <div className={styles.categoryGrid}>
                 {
                     categories.map((category, i) => {
@@ -88,28 +83,14 @@ const ChooseCategory = ( { setCategory, displayStyle } ) => {
 
 function Learn() {
 
-    const [category, setCategory] = useState('');
-    const { data: session } = useSession();
-    
-    if (session) { 
-        return (
-            <>
-                Signed in as {session.user.email} <br />
-                <button onClick={() => signOut()}>Sign out</button>
-                <ChooseCategory setCategory={setCategory}/>
-            </>
-        ); 
-    } 
-    
-    return (
-        <main className={styles.content}>
-            <div className={styles.studyCard}>
-                Not signed in!
-                <br />
-                <button onClick={() => signIn()}>Sign in</button>
-                <StudyPage category={category} setCategory={setCategory}/>
-            </div>
-        </main>);
+    const [category, setCategory] = useState('')
+
+    if (category == '') {
+        return <ChooseCategory setCategory={setCategory}/>
+    }
+    else {
+        return <StudyPage category={category} setCategory={setCategory}/>
+    }
 }
 
 

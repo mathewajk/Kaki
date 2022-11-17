@@ -1,9 +1,9 @@
 import '../styles/globals.css'
+import Header from "../components/header";
 
-import Image from "next/image";
 import { ApolloProvider, ApolloClient, InMemoryCache } from "@apollo/client";
-import { SessionProvider } from "next-auth/react";
-
+import { signIn, signOut, SessionProvider } from "next-auth/react";
+import { useEffect } from "react";
 
 const client = new ApolloClient({
   uri: process.env.NEXT_PUBLIC_GRAPHQL,
@@ -11,19 +11,30 @@ const client = new ApolloClient({
 });
 
 
-function MyApp({ Component, pageProps: { session, ...pageProps } }) {
+function MyApp({ Component, pageProps: { session, loading, ...pageProps } }) {
   
+  console.log("In wrapper, session is " + session);
 
-  console.log(process.env.GRAPHQL)
+  useEffect(() => {
+    const use = async () => {
+      (await import('tw-elements')).default;
+        };
+        use();
+      }, []);
 
   return (
-    <SessionProvider session={session}>
+    <SessionProvider session={session} refetchInterval={5 * 60} refetchOnWindowFocus={true}>
+      {
+        loading && <h2>Loading...</h2>
+      }
+
       <ApolloProvider client={client}>
-        <div className={"menuTop"}>
-          <Image src="/kaki.png" width={25} height={25} alt="" />&nbsp;&nbsp;&nbsp;<h2>Kaki</h2>
-        </div>
-        <Component {...pageProps} />
+        <main>
+          <Header/>
+          <Component {...pageProps} session={session}/>
+        </main>
       </ApolloProvider>
+
     </SessionProvider>
   );
 }
