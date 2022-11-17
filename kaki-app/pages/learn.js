@@ -38,7 +38,7 @@ function getRandomWord(words) {
     return words.pop();
 }
 
-const ChooseCategory = ( { setCategory, displayStyle } ) => {
+const ChooseCategory = ( { lang, setCategory, displayStyle } ) => {
     const categories = ["N5", "N4", "N3", "N2", "N1"];
     
     if(displayStyle == "menu") {
@@ -63,7 +63,7 @@ const ChooseCategory = ( { setCategory, displayStyle } ) => {
         <main className={styles.content}>
             <section className={styles.studyCard}>
                 <div className={styles.studyItem}>
-                <p className="mb-8">挑戦するレベルを選択してください。</p>
+                <p className="mb-8">{lang === "EN" ? "Choose a level:" : "挑戦するレベルを選択してください。"}</p>
                 <div className={styles.categoryGrid}>
                 {
                     categories.map((category, i) => {
@@ -71,7 +71,7 @@ const ChooseCategory = ( { setCategory, displayStyle } ) => {
                         e.preventDefault();
                         setCategory(category);
                     }
-                    return <button className="py-8 rounded-md" key={"cat-button-" + i} tag={"cat-button-" + i} style={{'background-color': 'rgb(' + (0 + 60 * i) + ', ' + (160 - 20 * i) + ', ' + (180 - 40 * i) + ')'}} onClick={handleClick}>{category}</button>
+                    return <button className="py-8 rounded-md text-white" key={"cat-button-" + i} tag={"cat-button-" + i} style={{'background-color': 'rgb(' + (0 + 60 * i) + ', ' + (160 - 20 * i) + ', ' + (180 - 40 * i) + ')'}} onClick={handleClick}>{category}</button>
                     })
                 }
                 </div>
@@ -81,15 +81,15 @@ const ChooseCategory = ( { setCategory, displayStyle } ) => {
     );
 }
 
-function Learn() {
+function Learn( {lang} ) {
 
     const [category, setCategory] = useState('')
 
     if (category == '') {
-        return <ChooseCategory setCategory={setCategory}/>
+        return <ChooseCategory lang={lang} setCategory={setCategory}/>
     }
     else {
-        return <StudyPage category={category} setCategory={setCategory}/>
+        return <StudyPage lang={lang} category={category} setCategory={setCategory}/>
     }
 }
 
@@ -163,7 +163,7 @@ const getMorae = (word) => {
     return morae;
 }
 
-function StudyPage( {category, setCategory} ) {
+function StudyPage( { lang, category, setCategory } ) {
 
     const { data, loading, error } = useQuery(VOCAB_QUERY_LEVEL, {
         variables: {category}
@@ -179,12 +179,12 @@ function StudyPage( {category, setCategory} ) {
     return(
         <main className={styles.content}>
             <ChooseCategory setCategory={setCategory} displayStyle={"menu"}/>
-            <StudyCard currentWord={initialState.word} wordList={initialState.words}/>
+            <StudyCard lang={lang} currentWord={initialState.word} wordList={initialState.words}/>
         </main>
     );
 }
 
-const StudyCard = ( { currentWord, wordList }) => {
+const StudyCard = ( { lang, currentWord, wordList }) => {
 
     const [studyState, setStudyState] = useState({word: currentWord, words: wordList});;
 
@@ -196,7 +196,7 @@ const StudyCard = ( { currentWord, wordList }) => {
         return(
             <section className={styles.studyCard}>
                 <div className="text-2xl">
-                    <h2 className={styles.tango}>おめでとうございます！今日の学習が終わりました。</h2>
+                    <h2 className={styles.tango}>{lang === "EN" ? "Congrats! You finished studying for today!" : "おめでとうございます！今日の学習が終わりました。"}</h2>
                 </div>
             </section>
         );

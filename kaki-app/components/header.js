@@ -7,7 +7,7 @@ import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useState } from "react";
 
-const Header = (props) => {
+const Header = ({lang, setLang}) => {
 
     const { data: session, status } = useSession();
 
@@ -18,16 +18,16 @@ const Header = (props) => {
             <div className="flex items-center">
                 <Link href="/">
                 <img src={'/kaki.png'} className="max-w-none h-4 w-4 md:h-8 md:w-8"></img></Link>&nbsp;&nbsp;
-                <Link href="/"><h3 className="font-bold">カキ</h3></Link>
+                <Link href="/"><h3 className="font-bold">{lang === "EN"? "Kaki" : "カキ"}</h3></Link>
             </div>
         </div>
 
-        <NavLinks session={session}/>
+        <NavLinks session={session} lang={lang} setLang={setLang} />
       </nav>
     );
 }
 
-const NavLinks = ( {session} ) => {
+const NavLinks = ( {session, lang, setLang} ) => {
 
     const [ isVisible, setIsVisible ] = useState(false);
 
@@ -41,13 +41,13 @@ const NavLinks = ( {session} ) => {
     <>
         <div className={(isVisible ? "block" : "hidden") + " w-full md:block md:w-auto"}>
             <ul className="flex flex-col items-center lg:text-base mt-4 md:flex-row md:space-x-4 md:mt-0 md:text-sm md:font-medium md:border-0 dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
-                <li className="block py-2 md:p-0"><Link className="font-bold p-2 hover:text-orange-500" href="/learn">学ぶ</Link></li>
-                <li className="block py-2 md:p-0"><Link className="font-bold p-2 hover:text-orange-500" href="/vocab">成績</Link></li>
+                <li className="block py-2 md:p-0"><Link className="font-bold p-2 hover:text-orange-500" href="/learn">{lang === "EN"? "Learn" : "学ぶ"}</Link></li>
+                <li className="block py-2 md:p-0"><Link className="font-bold p-2 hover:text-orange-500" href="/vocab">{lang === "EN"? "Progress" : "成績"}</Link></li>
                 {session && (
                     <li className="block py-2 md:p-0">
                     <div className="sr-only">User menu</div>
                     <Menu as="div" className="relative inline-block text-left z-20">
-                    <Menu.Button className="kaki-button inline-flex w-full justify-center text-sm font-medium px-4 py-2">{session.user.name.split(" ")[0]}様 
+                    <Menu.Button className="kaki-button inline-flex w-full justify-center text-sm font-medium px-4 py-2">{lang === "EN"? "Hi, " + session.user.name.split(" ")[0] + "!" : session.user.name + "様"} 
                     <ChevronDownIcon
                         className="ml-2 -mr-1 h-5 w-5"
                         aria-hidden="true"/>
@@ -62,7 +62,7 @@ const NavLinks = ( {session} ) => {
                               } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
                             href="#"
                             >
-                            設定
+                            {lang === "EN"? "Account settings" : "設定"}
                             </Link>
                         )}
                         </Menu.Item>
@@ -75,7 +75,7 @@ const NavLinks = ( {session} ) => {
                               onClick={() => signOut()}
                               href="#"
                             >
-                            ログアウト
+                            {lang === "EN"? "Log out" : "ログアウト"}
                             </Link>
                         )}
                         </Menu.Item>
@@ -83,7 +83,8 @@ const NavLinks = ( {session} ) => {
                     </Menu.Items>
                 </Menu>
                 </li>)}
-                { !session && (<li className="block py-2 pl-3 pr-4 text-white md:bg-transparent md:p-0 dark:text-white"><button className="kaki-button"><Link href="/login">ログイン</Link></button></li>) }
+                { !session && (<li className="block py-2 pl-3 pr-4 text-white md:bg-transparent md:p-0 dark:text-white"><button className="kaki-button"><Link href="/login">{lang === "EN"? "Log in" : "ログアイン"}</Link></button></li>) }
+                <li className="block py-2 md:p-0"><Link className="font-bold p-2 hover:text-orange-500" onClick={() => setLang(lang === "EN" ? "JA" : "EN")} href="#">{lang}</Link></li>
             </ul>
         </div>
         <div className="flex md:hidden">

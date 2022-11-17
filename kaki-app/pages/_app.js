@@ -3,7 +3,7 @@ import Header from "../components/header";
 
 import { ApolloProvider, ApolloClient, InMemoryCache } from "@apollo/client";
 import { signIn, signOut, SessionProvider } from "next-auth/react";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 
 const client = new ApolloClient({
   uri: process.env.NEXT_PUBLIC_GRAPHQL,
@@ -12,6 +12,8 @@ const client = new ApolloClient({
 
 
 function MyApp({ Component, pageProps: { session, loading, ...pageProps } }) {
+  
+  const [ lang, setLang ] = useState("EN");
   
   console.log("In wrapper, session is " + session);
 
@@ -30,8 +32,8 @@ function MyApp({ Component, pageProps: { session, loading, ...pageProps } }) {
 
       <ApolloProvider client={client}>
         <main>
-          <Header/>
-          <Component {...pageProps} session={session}/>
+          <Header lang={lang} setLang={ setLang } />
+          <Component {...pageProps} session={session} lang={lang}/>
         </main>
       </ApolloProvider>
 

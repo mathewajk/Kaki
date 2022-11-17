@@ -55,16 +55,17 @@ mutation deleteWord ($id: Int!) {
 
 function VocabList() {
   return (
-    <main className={styles.content}>
-      <div className="">
+    <div className="flex h-full justify-center items-center">
+      <div>Coming soon!</div>
+      {/* <div className="">
           <CreateWord/>
       </div>
       <h1>
       単語表
       </h1>
       <hr/>
-      <WordList/>
-    </main>
+      <WordList/> */}
+    </div>
   );
 };
 

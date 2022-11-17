@@ -26,7 +26,7 @@ const Pitch = (props) => {
     let word = props.word;
 
     return (
-      <p className={styles.pitchDisplay} style={{"--pitch": word.pitch}}>
+      <div className={styles.pitchDisplay} style={{"--pitch": word.pitch}}>
       
       {getMorae(word.yomi).map((mora, i) => {
         
@@ -53,7 +53,7 @@ const Pitch = (props) => {
 
       })}
 
-      <span className={styles["sr-only"]}> - Pitch accent: {word.pitch}</span></p>
+      <span className={styles["sr-only"]}> - Pitch accent: {word.pitch}</span></div>
     );
   }
 
