@@ -69,8 +69,7 @@ export const authOptions = {  // Configure one or more authentication providers
             },
 
             async authorize(credentials, req) {
-              // Add logic here to look up the user from the credentials supplied
-              const user = { id: "1", name: "J Smith", email: "jsmith@example.com" }
+
               console.log(credentials);
 
               try {
@@ -81,8 +80,8 @@ export const authOptions = {  // Configure one or more authentication providers
                         password: credentials.password,
                     }
                 );
-                response.data.name = response.data.user.username;
-                response.data.email = response.data.user.email;
+
+                response.data.user.name = response.data.user.username;
                 return(response.data);
 
               } catch(error) {
@@ -133,6 +132,7 @@ export const authOptions = {  // Configure one or more authentication providers
                         access_token: access_token,
                         refresh_token: refresh_token
                     }
+                    token.user = user.user;
                     return token;
                 }
 
@@ -165,6 +165,7 @@ export const authOptions = {  // Configure one or more authentication providers
                         refresh_token: refresh_token,
                     };
 
+                    token.user = user;
                     return token;
 
                 } catch (error) {
@@ -204,10 +205,9 @@ export const authOptions = {  // Configure one or more authentication providers
         },
 
         async session({ session, user, token } ) {
-            console.log(session);
-            console.log(user);
-            console.log(token);
-            
+            session.user = token.user;
+            console.log(session.user);
+
             session.access_token = token.access_token;
             if(user) {
                 session.user = user;

@@ -7,10 +7,15 @@ import Pitch from "../components/pitch";
 function Home( { lang } ) {
   
   const { data: session, status } = useSession()
+  
+  
 
-  console.log(session);
+  if(status == "loading") return (<></>);
+  
+  if(session) console.log(session.user);
+
   return (
-    <main className="grid height-full width-full content-center font-mplus">
+    <section className="grid h-full w-full content-center font-mplus">
 
       {
         !session && (
@@ -21,8 +26,8 @@ function Home( { lang } ) {
               <Pitch word={{tango: "日本語の発音を", yomi: "にほんごのはつおんを", pitch: 0}}/>
               <Pitch word={{tango: "マスター", yomi: "マスター", pitch: 1}}/>
               <Pitch word={{tango: "しよう", yomi: "しよう", pitch: 2}}/>
-              </div>
-              </p>
+            </div>
+          </p>
           <p><button className="kaki-button"><Link href="/register">{lang==="EN" ? "Get Started" : "始める"}</Link></button></p>
           </div>
         )
@@ -31,13 +36,22 @@ function Home( { lang } ) {
       {session && (
         
             <div className="text-center content-center">
-            {lang === "EN"? "Welcome, " + session.user.name.split(" ")[0] : "ようこそ" + session.user.name + "様"}
+              <WelcomeMessage lang={lang} user={session.user}/>
             </div>
         )
       }
 
-    </main>
+    </section>
   );
 };
+
+const WelcomeMessage = ( {lang, user} ) => {
+  return (
+    <>
+    {lang === 'EN' && `Welcome, ${user.name.split(" ")[0]}!`}
+    {lang === 'JA' && `ようこそ${user.name}様`}
+    </>
+  );
+}
 
 export default Home;

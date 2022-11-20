@@ -12,13 +12,13 @@ const Header = ({lang, setLang}) => {
     const { data: session, status } = useSession();
 
     return(
-        <nav className="menu bg-white fixed top-0 background-blur-sm left-0 flex shadow-md justify-between px-6 py-3 mb-10 w-full">
+        <nav className="menu fixed top-0 background-blur-sm left-0 flex shadow-md justify-between px-6 py-3 mb-10 w-full">
 
         <div className="flex h-10 lg:text-xl md:text-lg font-medium">
             <div className="flex items-center">
                 <Link href="/">
                 <img src={'/kaki.png'} className="max-w-none h-4 w-4 md:h-8 md:w-8"></img></Link>&nbsp;&nbsp;
-                <Link href="/"><h3 className="font-bold">{lang === "EN"? "Kaki" : "カキ"}</h3></Link>
+                <Link href="/" className="hover:text-orange-500"><h3 className="font-bold">{lang === "EN"? "Kaki" : "カキ"}</h3></Link>
             </div>
         </div>
 
@@ -40,7 +40,7 @@ const NavLinks = ( {session, lang, setLang} ) => {
     return(
     <>
         <div className={(isVisible ? "block" : "hidden") + " w-full md:block md:w-auto"}>
-            <ul className="flex flex-col items-center lg:text-base mt-4 md:flex-row md:space-x-4 md:mt-0 md:text-sm md:font-medium md:border-0 dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+            <ul className="flex flex-col items-center lg:text-base mt-4 md:flex-row md:space-x-4 md:mt-0 md:text-sm md:font-medium md:border-0 dark:border-gray-700">
                 <li className="block py-2 md:p-0"><Link className="font-bold p-2 hover:text-orange-500" href="/learn">{lang === "EN"? "Learn" : "学ぶ"}</Link></li>
                 <li className="block py-2 md:p-0"><Link className="font-bold p-2 hover:text-orange-500" href="/vocab">{lang === "EN"? "Progress" : "成績"}</Link></li>
                 {session && (
@@ -88,7 +88,7 @@ const NavLinks = ( {session, lang, setLang} ) => {
             </ul>
         </div>
         <div className="flex md:hidden">
-            <button data-collapse-toggle="navbar-default" type="button" onClick={() => toggleMenu()} className="inline-flex items-center p-2 mr-3 text-sm text-gray-500 rounded-lg h-10" aria-controls="navbar-default" aria-expanded="false">
+            <button data-collapse-toggle="navbar-default" type="button" onClick={() => toggleMenu()} className="inline-flex items-center p-2 mr-3 text-sm text-orange-500 dark:text-gray-300 rounded-lg h-10" aria-controls="navbar-default" aria-expanded="false">
                 <span className="sr-only">Open main menu</span>
                 <svg
                     xmlns="http://www.w3.org/2000/svg"

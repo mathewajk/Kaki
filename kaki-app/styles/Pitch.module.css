@@ -45,6 +45,14 @@
     background-color: #330D00;
 }
 
+
+@media (prefers-color-scheme: dark) {
+    .mora[data-pitch="high"]::before, .mora[data-pitch="start"]::after, 
+    .mora[data-pitch="low"]::before, .mora[data-pitch="start"]::before {
+        @apply bg-gray-200;
+    }
+}
+
 .mora[data-pitch="peak"]::before, .mora[data-pitch="peak"]::after {
     background-color: orangered;
 }

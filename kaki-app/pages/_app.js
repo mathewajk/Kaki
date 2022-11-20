@@ -14,15 +14,6 @@ const client = new ApolloClient({
 function MyApp({ Component, pageProps: { session, loading, ...pageProps } }) {
   
   const [ lang, setLang ] = useState("EN");
-  
-  console.log("In wrapper, session is " + session);
-
-  useEffect(() => {
-    const use = async () => {
-      (await import('tw-elements')).default;
-        };
-        use();
-      }, []);
 
   return (
     <SessionProvider session={session} refetchInterval={5 * 60} refetchOnWindowFocus={true}>
@@ -42,5 +33,4 @@ function MyApp({ Component, pageProps: { session, loading, ...pageProps } }) {
 }
 
 export default MyApp
-
 
