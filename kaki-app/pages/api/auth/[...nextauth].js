@@ -62,8 +62,7 @@ export const authOptions = {  // Configure one or more authentication providers
 
             async authorize(credentials, req) {
 
-              console.log(credentials);
-
+              // POST credentials to backend API
               try {
                 const response = await axios.post(
                     process.env.NEXT_PUBLIC_BACKEND_BASE_URL + "api/auth/login/", 
@@ -77,8 +76,7 @@ export const authOptions = {  // Configure one or more authentication providers
                 return(response.data);
 
               } catch(error) {
-                console.log(error.request.data);
-                console.log(error.response.data);
+                // TODO: Error handling
                 return null;
               }
             }
@@ -103,16 +101,13 @@ export const authOptions = {  // Configure one or more authentication providers
     pages: {
         error: '/login'
     },
-    // debug: process.env.NODE_ENV === "development",
 
     callbacks: {
 
         async jwt( { token, user, account, profile, isNewUser } ) {
 
-            // user just signed in
+            // User has just signed in
             if (user) {
-                console.log("Setting up JWT!");
-                console.log(user);
 
                 if(account.provider === "credentials") {
                     const { access_token, refresh_token } = user;
@@ -127,7 +122,7 @@ export const authOptions = {  // Configure one or more authentication providers
 
                 if (account.provider === "google") {
                     
-                    // extract these two tokens
+                    // extract access and ID tokens
                     const { access_token, id_token } = account;
 
                     // make a POST request to the DRF backend
@@ -143,6 +138,7 @@ export const authOptions = {  // Configure one or more authentication providers
                         // extract tokens from the returned data
                         const { refresh_token } = response.data;
                         const access_token_returned = response.data.access_token;
+                        
                         // reform the `token` object
                         token = {
                         ...token,
@@ -154,7 +150,6 @@ export const authOptions = {  // Configure one or more authentication providers
                     return token;
 
                 } catch (error) {
-                    //console.log(error);
                     return null;
                 }
             }
@@ -178,7 +173,6 @@ export const authOptions = {  // Configure one or more authentication providers
 
                     return token;
                 }
-                console.log("Token is expired.")
 
                 // Unable to refresh token from DRF backend; invalidate it
                 return {
@@ -194,10 +188,13 @@ export const authOptions = {  // Configure one or more authentication providers
             session.user = token.user;
             session.error = token.error;
             session.access_token = token.access_token;
-            console.log(session);
+
+            // Handle Google login...probably?
+            // TODO
             if(user) {
                 session.user = user;
             }
+
             return session;
         },
     }
