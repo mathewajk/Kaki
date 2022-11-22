@@ -2,8 +2,8 @@ import '../styles/globals.css'
 import Header from "../components/header";
 
 import { ApolloProvider, ApolloClient, InMemoryCache } from "@apollo/client";
-import { signIn, signOut, SessionProvider } from "next-auth/react";
-import { useState, useEffect } from "react";
+import { SessionProvider } from "next-auth/react";
+import { useState } from "react";
 
 const client = new ApolloClient({
   uri: process.env.NEXT_PUBLIC_GRAPHQL,
@@ -17,6 +17,7 @@ function MyApp({ Component, pageProps: { session, loading, ...pageProps } }) {
 
   return (
     <SessionProvider session={session} refetchInterval={5 * 60} refetchOnWindowFocus={true}>
+      
       {
         loading && <h2>Loading...</h2>
       }
