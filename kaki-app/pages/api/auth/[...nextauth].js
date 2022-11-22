@@ -1,13 +1,10 @@
 import NextAuth from "next-auth";
-import { getToken } from "next-auth/jwt"
-
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-import { useQuery, gql } from "@apollo/client";
 import axios from "axios";
 import jwt from "jsonwebtoken";
-import { signOut } from "next-auth/react";
+
 
 const refreshToken = async function (refreshToken) {
     console.log("Refreshing token");
@@ -52,13 +49,6 @@ const isJwtExpired = (token) => {
     return true;
 };
 
-const USER_QUERY = gql`query UserByIdentifier($identifier: String!) {
-    userByIdentifier(identifier: $username) {
-        user {
-            username
-        }
-    }
-}`
 
 export const authOptions = {  // Configure one or more authentication providers
    
@@ -137,10 +127,6 @@ export const authOptions = {  // Configure one or more authentication providers
 
                 if (account.provider === "google") {
                     
-                    //console.log("Handling google");
-                    //console.log(token);
-                    //console.log(process.env.NEXT_PUBLIC_BACKEND_BASE_URL + "api/google/"); 
-
                     // extract these two tokens
                     const { access_token, id_token } = account;
 
@@ -149,7 +135,7 @@ export const authOptions = {  // Configure one or more authentication providers
                         const response = await axios.post(
                             "http://127.0.0.1:8000/api/google/", 
                             {
-                                access_token: access_token, // note the differences in key and value variable names
+                                access_token: access_token, 
                                 id_token: id_token,
                             }
                         );
