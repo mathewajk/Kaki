@@ -5,14 +5,6 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --kaki-orange-light: rgb(236, 150, 10);
-  --kaki-orange-dark: rgb(232, 122, 4);
-
-  --kaki-blue-light: #ddf2ff;
-  --kaki-blue-dark: #0f4264;
-}
-
 html,
 body {
   width: 100%;
@@ -21,7 +13,7 @@ body {
   font-family: 'M PLUS Rounded 1c';
   font-weight: bold;
 
-  @apply bg-gray-100 dark:bg-gray-800;
+  @apply bg-white dark:bg-gray-800;
   margin: 0;
 }
 
@@ -34,21 +26,22 @@ a {
   box-sizing: border-box;
 }
 
-
-nav {
-  @apply bg-gray-100 dark:bg-gray-900 border-x-2 border-t-2 border-white;
-  z-index: 10;
-}
-
 @media (prefers-color-scheme: dark) {
-  nav {
-    @apply border-x-2 border-t-2 border-black;
+  html {
+    color-scheme: dark;
   }
 }
 
+nav {
+  @apply bg-white;
+  z-index: 10;
+}
+
 nav::after {
-  content: '';
-  @apply absolute w-full h-0.5 bottom-0 left-0;
+  content: "";
+  position: absolute;
+  @apply w-full h-1 bottom-0 left-0;
+  border-color: rgb(176, 176, 176);
   background-color: rgba(114, 161, 28, 0.758);
   background: linear-gradient(45deg, rgba(201, 126, 13, 0.758) 0%, rgba(114, 161, 28, 0.758) 50%);
 }
@@ -59,33 +52,20 @@ button {
 
 .kaki-button {
   padding: 0.5em;
-  background-color: var(--kaki-orange-dark);
+  background-color: rgb(255, 115, 0);
   font-weight: bold;
   border-radius: 5px;
   cursor: pointer;
   @apply transition text-white shadow-md duration-150 ease-in-out
 }
 
-@media (prefers-color-scheme: dark) {
-  .kaki-button {
-    background-color: var(--kaki-orange-light);
-    @apply text-gray-900;
-  }
-}
-
 .kaki-button:hover {
-  background-color: var(--kaki-orange-dark);
+  background-color: rgb(255, 72, 0);
 }
 
 .color-orangered {
-  color: var(--kaki-orange-dark);
+  color: rgb(236, 150, 10);
   @apply drop-shadow-sm
-}
-
-@media (prefers-color-scheme: dark) {
-  .color-orangered {
-    color: var(--kaki-orange-light);
-  }
 }
 
 #__next {
@@ -98,26 +78,30 @@ main {
   @apply h-full w-full m-0;
 
   font-size: 20px;
+
   
-  color: var(--kaki-blue-dark);
+  color: #0f4264;
   
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 @media (prefers-color-scheme: dark) {
-  
-  html {
-    color-scheme: dark;
+    main {
+    color:  #b8b8db;
   }
+}
 
-  nav::after {
-    background-color: rgba(114, 161, 28, 0.758);
-    background: linear-gradient(45deg, rgba(105, 65, 6, 0.758) 0%, rgba(64, 90, 16, 0.758) 50%);
-  }
+.menuTop {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  top: 10px;
+  left: 0;
+  font-size: 1em;
+  color: rgb(233, 141, 12);
+}
 
-  main {
-    color:  var(--kaki-blue-light);
-  }
-  
+.menuTop h2 {
+  margin: 0px;
 }

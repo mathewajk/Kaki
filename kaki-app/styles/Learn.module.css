@@ -82,6 +82,8 @@
     background-color: rgb(232, 242, 204);
     color:#2f2f6e;
     font-weight: 300;
+    padding-top: 1em;
+    @apply shadow-md border-t border-r border-green-200 rounded-lg;
 }
 
 .buttonGrid button:hover:enabled {
