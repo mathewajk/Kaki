@@ -239,6 +239,18 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000'
 ]
 
+CSRF_ALLOWED_ORIGINS = [
+    'https://kaki-backend.up.railway.app',
+    'https://kaki-eta.vercel.app',
+    'https://kaki-narquelion.vercel.app',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:8000',
+    'http://localhost:3000',
+    'http://localhost:8000'
+]
+
+CORS_ALLOW_CREDENTIALS=True
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
