@@ -3,13 +3,13 @@ import Header from "../components/header";
 
 import { ApolloProvider, ApolloClient, InMemoryCache } from "@apollo/client";
 import { SessionProvider } from "next-auth/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { signOut, useSession } from "next-auth/react";
 
 const client = new ApolloClient({
   uri: process.env.NEXT_PUBLIC_GRAPHQL,
   cache: new InMemoryCache()
 });
-
 
 function MyApp({ Component, pageProps: { session, loading, ...pageProps } }) {
   
@@ -17,7 +17,7 @@ function MyApp({ Component, pageProps: { session, loading, ...pageProps } }) {
 
   return (
     <SessionProvider session={session} refetchInterval={5 * 60} refetchOnWindowFocus={true}>
-      
+
       {
         loading && <h2>Loading...</h2>
       }

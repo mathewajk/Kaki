@@ -28,9 +28,13 @@ const CredentialForm = ( { type, lang } ) => {
     setFormValues({ ...formValues, rememberMe: !rememberMe });
   };
   
-  handleChange(event) {
-    this.setState({[event.target.name]: event.target.value});
-  }
+  const handleChange = (prop) => (event) => {
+    setFormValues({ ...formValues, [prop]: event.target.value });
+  };
+
+  // handleChange(event) {
+  //   this.setState({[event.target.name]: event.target.value});
+  // }
   
   const handleClickShowPassword = (e) => {
     e.preventDefault();

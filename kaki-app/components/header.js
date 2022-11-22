@@ -35,8 +35,6 @@ const NavLinks = ( {session, lang, setLang} ) => {
         setIsVisible(!isVisible);
     }
 
-    console.log(isVisible);
-
     return(
     <>
         <div className={(isVisible ? "block" : "hidden") + " w-full md:block md:w-auto"}>

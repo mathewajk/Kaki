@@ -7,9 +7,11 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { useQuery, gql } from "@apollo/client";
 import axios from "axios";
 import jwt from "jsonwebtoken";
+import { signOut } from "next-auth/react";
 
 const refreshToken = async function (refreshToken) {
     console.log("Refreshing token");
+    console.log(refreshToken);
     try {
         const response = await axios.post(
             process.env.NEXT_PUBLIC_BACKEND_BASE_URL + "api/auth/token/refresh/",
@@ -101,7 +103,7 @@ export const authOptions = {  // Configure one or more authentication providers
 
     session: {
       strategy: "jwt",
-      maxAge: 24 * 60 * 60, // 24 hours
+      maxAge: 36 * 60 * 60, // 36 hours
     },
 
     jwt: {
@@ -114,9 +116,6 @@ export const authOptions = {  // Configure one or more authentication providers
     // debug: process.env.NODE_ENV === "development",
 
     callbacks: {
-        // async signIn( { user, account, profile, email, credentials } ) {
-        //     return true;
-        // },
 
         async jwt( { token, user, account, profile, isNewUser } ) {
 
@@ -193,11 +192,12 @@ export const authOptions = {  // Configure one or more authentication providers
 
                     return token;
                 }
+                console.log("Token is expired.")
 
                 // Unable to refresh token from DRF backend; invalidate it
                 return {
                     ...token,
-                    exp: 0,
+                    error: "RefreshAccessTokenError",
                 };
             }
             // Token is valid
@@ -206,9 +206,9 @@ export const authOptions = {  // Configure one or more authentication providers
 
         async session({ session, user, token } ) {
             session.user = token.user;
-            console.log(session.user);
-
+            session.error = token.error;
             session.access_token = token.access_token;
+            console.log(session);
             if(user) {
                 session.user = user;
             }
