@@ -6,11 +6,15 @@ class VocabItem(models.Model):
 
     tango      = models.CharField(default="", max_length=50)
     yomi       = models.CharField(default="", max_length=50)
-    pitch      = models.IntegerField(default=0)
-    pos        = models.CharField(default="", max_length=50)
+
+    pitch = models.CharField(default="", max_length=25)
+    addl_pitch = models.CharField(blank=True, default="", max_length=25)
+
+    pos = models.CharField(default="", max_length=50)
+    addl_pos = models.CharField(blank=True, default="", max_length=50)
+
     definition = models.CharField(default="", max_length=1000)   
-    category   = models.CharField(default="", max_length=50)
-    learned    = models.BooleanField(default=False)
+    category   = models.CharField(blank=True, default="", max_length=50)
 
     def __str__(self):
         return "{0} ({1} {2})".format(self.tango, self.yomi, self.pitch)
