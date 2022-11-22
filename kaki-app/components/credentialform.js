@@ -1,12 +1,23 @@
 import { signIn, signOut, useSession } from "next-auth/react";
 import React, { useState, useCallback, useEffect } from "react";
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/20/solid'
+import axios from "axios";
+
+export async function getStaticProps() {
+  const db = await myDB.connect({
+    host: process.env.DB_HOST,
+    username: process.env.DB_USER,
+    password: process.env.DB_PASS,
+  });
+}
 
 const CredentialForm = ( { type, lang } ) => {
 
   const [formValues, setFormValues] = useState({
     username: '',
-    password: '',    
+    password: '', 
+    email: '',
+    passwordConf: '',  
     showPassword: false,
     rememberMe: false
   });
@@ -17,9 +28,9 @@ const CredentialForm = ( { type, lang } ) => {
     setFormValues({ ...formValues, rememberMe: !rememberMe });
   };
   
-  const handleChange = (prop) => (event) => {
-    setFormValues({ ...formValues, [prop]: event.target.value });
-  };
+  handleChange(event) {
+    this.setState({[event.target.name]: event.target.value});
+  }
   
   const handleClickShowPassword = (e) => {
     e.preventDefault();
@@ -28,7 +39,7 @@ const CredentialForm = ( { type, lang } ) => {
   
   const handleCredentialLogin = async (e) => {    
     e.preventDefault();
-    console.log(formValues);
+    console.log("Logging in!");
     signIn("credentials", {
       redirect: true,
       username: formValues.username,
@@ -38,19 +49,36 @@ const CredentialForm = ( { type, lang } ) => {
   };
   
   const handleRegistration = async (e) => {    
+    
     e.preventDefault();
-    //setShowAlert(true);
-    await axios.post(
-      process.env.BACKEND_BASE_URL + "api/auth/register", {
-        username: formValues.username,
-        email: formValues.email,
-        password: formValues.password,
-      }).then((response) => {
-        console.log(response);
 
-      }).error((error) => {
-        console.log(error)
+    const userData = {
+      username: formValues.username,
+      email: formValues.email,
+      password1: formValues.password,
+      password2: formValues.passwordConf
+    };
+
+    console.log("Attempting registration...");
+    console.log(userData);
+    //setShowAlert(true);
+    try {
+      console.log("In try");
+      const response = await axios.post(
+        process.env.NEXT_PUBLIC_BACKEND_BASE_URL + "api/auth/registration/", 
+        userData
+      );
+      console.log(response);
+      signIn("credentials", {
+        redirect: true,
+        username: formValues.username,
+        password: formValues.password,
+        callbackUrl: '/'
       });
+    } catch(error){
+      console.log("Registration failed!");
+      console.log(error);
+    }
   };
 
   return(
@@ -73,7 +101,7 @@ const CredentialForm = ( { type, lang } ) => {
               </div>
               <div className="form-group mb-2">
                   <label htmlFor="input-email-for-credentials-provider" className="form-label inline-block my-2">{lang === "EN"? "Email" : "Eメール"}</label>
-                  <input label="Email" onChange={handleChange('username')} placeholder="me@example.com" value={formValues.username} id="input-email-for-credentials-provider" type="email" className="form-control w-full px-3 py-1.5 mb-2 border border-solid border-gray-300 rounded"></input>
+                  <input label="Email" onChange={handleChange('email')} placeholder="me@example.com" value={formValues.email} id="input-email-for-credentials-provider" type="email" className="form-control w-full px-3 py-1.5 mb-2 border border-solid border-gray-300 rounded"></input>
               </div>
               </>
             )}
@@ -88,7 +116,18 @@ const CredentialForm = ( { type, lang } ) => {
                     aria-hidden="true"/>) }</button>
                 <input label="Password" required onChange={handleChange('password')} placeholder='123' value={formValues.password} id="input-password-for-credentials-provider" type={formValues.showPassword ? 'text' : 'password'} className="form-control w-full px-3 py-1.5 my-2 border border-solid border-gray-300 rounded"></input>
                 </div>
+           </div>
+           {type === "register" && (<div className="form-group mb-2">
+                <label htmlFor="input-password-confirmation-for-credentials-provider" className="form-label inline-block my-2">{lang === "EN"? "Confirm password" : "パスワード"}</label>
+                <div className="flex relative justify-end items-center">
+                    <button className="absolute mr-1 bg-transparent hover:bg-transparent text-gray-800" onClick={handleClickShowPassword}>{formValues.showPassword ? (<EyeIcon
+                className="h-5 w-5"
+                aria-hidden="true"/>) : (<EyeSlashIcon
+                    className="h-5 w-5"
+                    aria-hidden="true"/>) }</button>
+                <input label="Password confirmation" required onChange={handleChange('passwordConf')} placeholder='123' value={formValues.passwordConf} id="input-password-confirmation-for-credentials-provider" type={formValues.showPasswordConfirmation ? 'text' : 'password'} className="form-control w-full px-3 py-1.5 my-2 border border-solid border-gray-300 rounded"></input>
                 </div>
+           </div>)}
 
             { (type === "login") && (
                 <button type="submit" className="kaki-button mt-2 w-full leading-tight shadow-md" onClick={handleCredentialLogin}>

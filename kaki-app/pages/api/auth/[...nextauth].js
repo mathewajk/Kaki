@@ -12,7 +12,7 @@ const refreshToken = async function (refreshToken) {
     console.log("Refreshing token");
     try {
         const response = await axios.post(
-            process.env.BACKEND_BASE_URL + "api/auth/token/refresh/",
+            process.env.NEXT_PUBLIC_BACKEND_BASE_URL + "api/auth/token/refresh/",
             {
                 refresh: refreshToken,
             },
@@ -74,7 +74,7 @@ export const authOptions = {  // Configure one or more authentication providers
 
               try {
                 const response = await axios.post(
-                    process.env.BACKEND_BASE_URL + "api/auth/login/", 
+                    process.env.NEXT_PUBLIC_BACKEND_BASE_URL + "api/auth/login/", 
                     {
                         username: credentials.username,
                         password: credentials.password,
@@ -140,7 +140,7 @@ export const authOptions = {  // Configure one or more authentication providers
                     
                     //console.log("Handling google");
                     //console.log(token);
-                    //console.log(process.env.BACKEND_BASE_URL + "api/google/"); 
+                    //console.log(process.env.NEXT_PUBLIC_BACKEND_BASE_URL + "api/google/"); 
 
                     // extract these two tokens
                     const { access_token, id_token } = account;
