@@ -35,6 +35,10 @@
     color: coral;
 }
 
+.word-info {
+    background-color: rgb(255, 243, 238);
+}
+
 .studyCard {
     width: 100%;
     margin-top: auto;

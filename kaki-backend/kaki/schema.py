@@ -31,44 +31,45 @@ class CreateUser(graphene.Mutation):
         user.save()
         return CreateUser(ok=True, user=user)
 
+
 class CreateStudyItem(graphene.Mutation):
     class Arguments:
-        user_id = graphene.Int()
-        item_id = graphene.Int()
-        priority = graphene.Int()
+        username = graphene.String()
+        tango_id = graphene.Int()
+        due      = graphene.Date()
     
     ok = graphene.Boolean()
     study_item = graphene.Field(StudyItemType)
 
-    def mutate(self, info, user_id, item_id, priority):
-        user = User.objects.get(id=user_id)
-        item = VocabItem.objects.get(id=item_id)
+    def mutate(self, info, **kwargs):
         
-        print("Create study item:")
-        study_item = StudyItem(user=user, item=item, priority=priority)
-        print(study_item)
+        user = UserAccount.objects.get(username=kwargs.get('username'))
+        item = VocabItem.objects.get(id=kwargs.get('tango_id'))
+        
+        # Disallow duplicate study items
+        if StudyItems.objects.filter(user=user, item=item):
+            return CreateStudyItem(ok=False, item=None)
 
-        try:
-            study_item.save()
-        except Exception as e:
-            print(e)
-        print("End")
+        due = kwargs.get('due')
+
+        study_item = StudyItem(user=user, item=item, priority=due)
+        study_item.save()
         return CreateStudyItem(ok=True, study_item=study_item)
-
 
 
 class Query(graphene.ObjectType):
     
-    words = graphene.List(VocabType)
     users = graphene.List(UserAccountType)
 
     user_by_identifier = graphene.Field(UserAccountType, identifier=graphene.String())
     user_by_email      = graphene.Field(UserAccountType, email=graphene.String())
     
     # Need to define matching fields for functions!
-    study_items = graphene.List(StudyItemType)
-    study_items_by_user = graphene.List(StudyItemType, userId=graphene.Int())
-    vocab_by_level = graphene.List(VocabType, category=graphene.String())
+    study_items = graphene.List(StudyItemType, \
+                                username=graphene.Argument(graphene.String(), required=False), \
+                                category=graphene.Argument(graphene.String(), required=False))
+    words = graphene.List(VocabType, \
+                          category=graphene.Argument(graphene.String(), required=False))
 
     # Function name must be of the form 'resolve_{variable}' to work!
     def resolve_words(self, info, **kwargs):
@@ -93,15 +94,22 @@ class Query(graphene.ObjectType):
             return
         return user[0]
 
-    def resolve_study_items(self, info):
-        return StudyItem.objects.all()
+    def resolve_study_items(self, info, **kwargs):
+        
+        username  = kwargs.get('username')
+        if not username:
+            return StudyItem.objects.all()
 
-    def resolve_study_items_by_user(self, info, **kwargs):
-        userId = kwargs.get('userId')
-        user = User.objects.filter(id=userId)
+        user = UserAccount.objects.filter(username=username)
         if not user:
-            return
-        return StudyItem.objects.filter(user=user[0])
+            return Null
+        
+        category = kwargs.get('category')
+        if not category:
+            return StudyItem.objects.filter(user=user[0])
+
+        return StudyItem.objects.filter(user=user[0], item__category__contains=category)
+
 
     def resolve_vocab_by_level(self, info, **kwargs):
         category = kwargs.get('category')

@@ -12,6 +12,9 @@ module.exports = {
     extend: {
       fontSize: {
         splash: '10em',
+        '7xl': '7rem',
+        '6xl': '7rem',
+        '5xl': '7rem',
         ...defaultTheme.fontSize
       },
 

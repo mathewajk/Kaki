@@ -23,7 +23,7 @@ function MyApp({ Component, pageProps: { session, loading, ...pageProps } }) {
       }
 
       <ApolloProvider client={client}>
-        <main>
+        <main className="flex flex-col">
           <Header lang={lang} setLang={ setLang } />
           <Component {...pageProps} session={session} lang={lang}/>
         </main>

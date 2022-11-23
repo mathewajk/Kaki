@@ -81,7 +81,7 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
 
 class StudyItem(models.Model):
 
-    user     = models.ForeignKey(User, on_delete=models.CASCADE)
+    user     = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
     item     = models.ForeignKey(VocabItem, on_delete=models.CASCADE)
     priority = models.IntegerField()
 
