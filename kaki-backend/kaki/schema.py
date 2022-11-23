@@ -35,26 +35,32 @@ class CreateUser(graphene.Mutation):
 class CreateStudyItem(graphene.Mutation):
     class Arguments:
         username = graphene.String()
-        tango_id = graphene.Int()
-        due      = graphene.Date()
+        tango_id = graphene.List(graphene.Int)
+        due      = graphene.String()
     
     ok = graphene.Boolean()
-    study_item = graphene.Field(StudyItemType)
+    items = graphene.List(StudyItemType)
 
     def mutate(self, info, **kwargs):
         
-        user = UserAccount.objects.get(username=kwargs.get('username'))
-        item = VocabItem.objects.get(id=kwargs.get('tango_id'))
-        
-        # Disallow duplicate study items
-        if StudyItems.objects.filter(user=user, item=item):
-            return CreateStudyItem(ok=False, item=None)
+        ids = kwargs.get('tango_id')
+        items = []
 
-        due = kwargs.get('due')
+        for id in ids:
+            user = UserAccount.objects.get(username=kwargs.get('username'))
+            item = VocabItem.objects.get(id=id)
+            
+            # Disallow duplicate study items
+            if StudyItem.objects.filter(user=user, item=item):
+                return CreateStudyItem(ok=False, item=None)
 
-        study_item = StudyItem(user=user, item=item, priority=due)
-        study_item.save()
-        return CreateStudyItem(ok=True, study_item=study_item)
+            due = kwargs.get('due')
+
+            study_item = StudyItem(user=user, item=item, priority=due)
+            items.append(study_item)
+            study_item.save()
+
+        return CreateStudyItem(ok=True, items=items)
 
 
 class Query(graphene.ObjectType):
@@ -73,6 +79,9 @@ class Query(graphene.ObjectType):
 
     # Function name must be of the form 'resolve_{variable}' to work!
     def resolve_words(self, info, **kwargs):
+        category = kwargs.get('category')
+        if category:
+            return VocabItem.objects.filter(category=category)
         return VocabItem.objects.all()
 
     def resolve_users(self, info, **kwargs):
@@ -109,11 +118,6 @@ class Query(graphene.ObjectType):
             return StudyItem.objects.filter(user=user[0])
 
         return StudyItem.objects.filter(user=user[0], item__category__contains=category)
-
-
-    def resolve_vocab_by_level(self, info, **kwargs):
-        category = kwargs.get('category')
-        return VocabItem.objects.filter(category=category)
 
 
 class Mutation(graphene.ObjectType):

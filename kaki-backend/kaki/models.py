@@ -83,7 +83,7 @@ class StudyItem(models.Model):
 
     user     = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
     item     = models.ForeignKey(VocabItem, on_delete=models.CASCADE)
-    priority = models.IntegerField()
+    priority = models.CharField(max_length = 255, null=False, blank=False)
 
     def __str__(self):
-        return "{0}, {1}, {2}".format(self.user.name, self.item.tango, self.priority)
+        return "{0}, {1}, {2}".format(self.user.username, self.item.tango, self.priority)

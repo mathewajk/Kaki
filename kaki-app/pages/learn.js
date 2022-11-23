@@ -1,28 +1,16 @@
 import styles from '../styles/Learn.module.css'
 import Pitch from "../components/pitch";
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useQuery, useMutation, gql } from "@apollo/client";
 import { useSession } from "next-auth/react";
 
-// States: List of words (database query), answer the user has chosen (user input)
-
-// Steps
-// Is a user logged in? -> check session.user
-// Does the user have study items in category? query studyItemsByUserCat(user, category)
-   // If no study items, initialize the list: 
-        // query wordsByCategory(category)
-        // mutate createStudyItem for each word
-        // for each twenty words, increment due-date by 24h
-// If yes, do any study items have sheduled date <= now?
-    // If yes, add to quiz list
-// Quiz and update: mutate each studyitem after answer
 
 const CREATE_STUDY_ITEM = gql`
-mutation CreateStudyItem($username: String!, $tangoId: Int!, $due: Date!) {
+mutation CreateStudyItem($username: String!, $tangoId: [Int]!, $due: String!) {
     createStudyItem(username: $username, tangoId: $tangoId, due: $due) {
         ok
-        studyItem {
+        items {
             item {
                 tango
                 yomi
@@ -36,7 +24,7 @@ mutation CreateStudyItem($username: String!, $tangoId: Int!, $due: Date!) {
 }`
 
 const QUERY_STUDY_ITEMS = gql`
-query studyItemsAndWords($username: String, $category: String) {
+query StudyItemsAndWords($username: String, $category: String) {
     studyItems(username: $username, category: $category) {
         item {
             tango
@@ -60,22 +48,20 @@ query studyItemsAndWords($username: String, $category: String) {
 /* Things to look into: Children, context, redux? */
 
 const ChooseCategory = ( { lang, setCategory, displayStyle } ) => {
-    const categories = ["N5", "N4", "N3", "N2", "N1"];
+    const categories = ["n5", "n4", "n3", "n2", "n1"];
     
     if(displayStyle == "menu") {
         return (
-        <div className="">
-            <div className="categoryGrid sm:text-lg md:text-xl lg:text-2xl">
+        <div className="categoryGrid sm:text-lg md:text-xl lg:text-2xl">
         {
             categories.map((category, i) => {
             function handleClick(e) {
                 e.preventDefault();
                 setCategory(category);
             }
-            return <button key={"cat-button-" + i} tag={"cat-button-" + i} className="text-sm p-1 mr-4" style={{'background-color': 'rgb(' + (0 + 60 * i) + ', ' + (160 - 20 * i) + ', ' + (180 - 40 * i) + ')'}} onClick={handleClick}>{category}</button>
+            return <button key={"cat-button-" + i} tag={"cat-button-" + i} className="text-sm py-1 px-2 mr-4" style={{'background-color': 'rgb(' + (0 + 60 * i) + ', ' + (160 - 20 * i) + ', ' + (180 - 40 * i) + ')'}} onClick={handleClick}>{category.toUpperCase()}</button>
             })
         }
-        </div>
         </div>
         );
     }
@@ -102,25 +88,34 @@ const ChooseCategory = ( { lang, setCategory, displayStyle } ) => {
     );
 }
 
-function Learn( {lang} ) {
+const Loading = ( { lang } ) => {
+
+    const text = {
+        "EN": "Loading study session...",
+        "JA": "読み込み中..."
+    };
+
+    return(
+        <section className={styles.studyCard}>
+        <div className="text-2xl">
+            <h2 className={styles.tango}>{text[lang]}</h2>
+        </div>
+        </section>
+    );
+}
+
+function Learn( { lang } ) {
 
     const [category, setCategory] = useState('');
     const { data: session, status } = useSession();
 
-    if(status === "loading") {
-        <section className={styles.studyCard}>
-        <div className="text-2xl">
-            <h2 className={styles.tango}>{lang === "EN" ? "Loading study session..." : "読み込み中..."}</h2>
-        </div>
-        </section>
-    }
-
-    if (category == '') {
-        return <ChooseCategory lang={lang} setCategory={setCategory}/>
-    }
-    else {
-        return <StudyPage lang={lang} session={session} category={category} setCategory={setCategory}/>
-    }
+    return(
+        <>
+            {status === "loading" && (<Loading lang={lang}/>)}
+            {category === '' && (<ChooseCategory lang={lang} setCategory={setCategory}/>)}
+            {category !== '' && (<StudyPage lang={lang} session={session} category={category} setCategory={setCategory}/>)}
+        </>
+    );
 }
 
 function StudyPage( { lang, session, category, setCategory } ) {
@@ -128,20 +123,47 @@ function StudyPage( { lang, session, category, setCategory } ) {
     const username = session?.user.username;
 
     const { data, loading, error } = useQuery(QUERY_STUDY_ITEMS, {
-        variables: { username, category }
+        variables: { username: username, category: category }
     });
 
-    if (loading) return(
+    const [mutateStudyItem, mutationStatus] = useMutation(CREATE_STUDY_ITEM, {
+        refetchQueries: [ 
+          {query: QUERY_STUDY_ITEMS, variables: { username: username, category: category }}, // DocumentNode object parsed with gql
+          'StudyItemsAndWords' // Query name 
+        ]
+      });
+
+    console.log(mutationStatus);
+    if (loading || mutationStatus.loading) return(
         <section className={styles.studyCard}>
         <div className="text-2xl">
             <h2 className={styles.tango}>{lang === "EN" ? "Loading study session..." : "読み込み中..."}</h2>
         </div>
         </section>);
         
-    if (error)   return <pre>{error.message}</pre>;
+    if (error || mutationStatus.error) {
+        return <pre>{error.message} {mutationStatus?.error.message}</pre>;
+    }
     
     // Shuffle currently-due words. TODO: Will need to shuffle according to time due?
-    let wordList = fisherYates(data.words);
+
+    let wordList;  
+    if(username) {
+        if (data.studyItems.length == 0) {
+       let ids = Object.values(data.words).map(item => parseInt(item.id));
+       mutateStudyItem({variables: {username: username, tangoId: ids, due: Date.now().toString()}});
+       return(
+        <section className={styles.studyCard}>
+        <div className="text-2xl">
+            <h2 className={styles.tango}>{lang === "EN" ? "Loading study session..." : "読み込み中..."}</h2>
+        </div>
+        </section>);
+        }
+        wordList = data.studyItems.slice();
+    }
+
+    // Temp
+    wordList = fisherYates(data.words);
     let initialState = getNextWord(wordList);
 
     return(
@@ -153,11 +175,22 @@ function StudyPage( { lang, session, category, setCategory } ) {
 
 const StudyCard = ( { lang, currentWord, setCategory, wordList }) => {
 
-    const [studyState, setStudyState] = useState({word: currentWord, words: wordList});;
-    const [visible, setVisible] = useState(false);
+    const [studyState, setStudyState] = useState({word: currentWord, words: wordList, answerList: generateAnswers(currentWord) });
+    const [answerState, setAnswerState] = useState({ clicked: -1, result: ''});
 
+    console.log(wordList);
     if(wordList != studyState.words) {
-        setStudyState( {word: currentWord, words: wordList});
+        setStudyState( {word: currentWord, words: wordList, answerList: generateAnswers(currentWord) });
+    }
+
+    let feedback = (lang === "EN" ? "Correct!" : "正解！");
+    if(answerState.result === "incorrect") {
+        feedback = (lang === "EN" ? "Too bad!" : "次は頑張ってね！");
+    }
+
+    const toNextWordB = () => {
+        setStudyState(getNextWord(wordList));
+        setAnswerState({ clicked: -1, result: ''});
     }
 
     if(studyState.word == null && studyState.words.length == 0) {
@@ -170,35 +203,40 @@ const StudyCard = ( { lang, currentWord, setCategory, wordList }) => {
         );
     }
 
-    let answerList = [];
-    if (studyState.word != null) {
-        answerList = generateAnswers(studyState.word);
-    }
-
     return(
-        <section className="grid grid-cols-1 w-full h-full text-lg md:text-xl lg:text-2xl">
-            <section className="relative shadow-md grid grid-cols-1 w-full place-items-center justify-center">
-                <div className="grid grid-cols-1 w-1/2 mt-4 mb-6">
-                    <div class="flex justify-center my-4">
-                        <h2 className={styles.tango + " text-7xl md:text-8xl lg:text-9xl mb-5"}>{studyState.word?.tango}</h2>
+        <section relative className="flex flex-col w-full h-full text-lg md:text-xl lg:text-2xl">
+            <section className="relative flex flex-col w-full h-full md:h-3/4 overflow-hidden md:overflow-scroll shadow-md">
+                <div className="flex flex-col justify-evenly h-full md:h-3/4 w-full md:w-3/4">
+                    <div class="flex justify-center">
+                        <h2 className={styles.tango + " text-7xl md:text-8xl lg:text-9xl"}>{studyState.word?.tango}</h2>
                     </div>
-                    <div class="mb-6">
-                        <ButtonGrid currentWord={studyState.word} wordList={wordList} answerList={answerList} setCurrentWord={setStudyState} setVisible={setVisible} />
+                    <div>
+                        <ButtonGrid answerList={studyState.answerList} setAnswerState={setAnswerState} answerState={answerState} />
+                    </div>
+                    <div className="text-center" style={{"visibility": (answerState.clicked == -1 ? "hidden" : "visible")} }>
+                        <button className="kaki-button" onClick={() => toNextWordB()}>{feedback} →</button>
                     </div>
                 </div>
-                <div className="flex w-full justify-end pb-2">
+            
+                <div className="md:absolute bottom-0 flex w-full justify-between md:justify-end items-end pb-2">
+                    <button className="text-2xl block md:hidden rounded-md bg-gray-400 px-3 ml-4">Info</button>
                     <ChooseCategory setCategory={setCategory} displayStyle={"menu"}/>
                 </div>
             </section>
-            <div className="bg-gray-200 w-full border-t-4 border-gray-200 w-full">
-                    <Definition word={studyState.word} lang={lang} visible={visible} setVisible={setVisible}/>
-            </div>
+            <Definition word={studyState.word} answerState={answerState} lang={lang}/>
         </section>
     );
 }
 
-const Definition = ( { word, lang, visible, setVisible } ) => {
+const Definition = ( { word, answerState, lang } ) => {
     
+    const [visible, setVisible] = useState(false);
+
+    // Hide info when word changes
+    useEffect(() => {
+        setVisible(false)
+    }, [word]);
+
     function handleClick(e) {
         e.preventDefault();
         setVisible(!visible);
@@ -210,49 +248,43 @@ const Definition = ( { word, lang, visible, setVisible } ) => {
     }
  
     return(
-        <div className="overflow-scroll h-full">
-            {! visible && (<div onClick={handleClick} className="hover:cursor-pointer flex w-full h-full items-center justify-center">
-                <button onClick={handleClick}>{text}</button>
-                </div>)}
-            {visible && (
-            <div style={{visibility: (visible ? "visible" : "hidden")}} className="flex flex-row h-full">
-                <div className="flex border-r-2 border-gray-400 w-1/4 justify-center items-center text-center px-1 my-4">
-                    <div className="h-1/2">
-                        <p className="text-orange-700 text-2xl mb-3">{word.tango}</p>
-                        <p className="text-lg font-normal text-black"><Pitch word={word}/></p>
+        <div className="hidden md:block bg-gray-200 h-1/4 border-t-4 border-gray-200 w-full">
+            <div className="overflow-scroll h-full">
+                {! visible && (<div onClick={handleClick} className="hover:cursor-pointer flex w-full h-full items-center justify-center">
+                    <button onClick={handleClick}>{text}</button>
+                    </div>)}
+                {visible && (
+                <div style={{visibility: (visible ? "visible" : "hidden")}} className="flex flex-row h-full">
+                    <div className="flex border-r-2 border-gray-400 w-1/4 justify-center items-center text-center px-1">
+                        <div className="h-1/2">
+                            <p className="text-orange-700 text-2xl mb-3">{word.tango}</p>
+                            {answerState.clicked != -1 && (<p className="text-lg font-normal text-black"><Pitch word={word}/></p>)}
+                            {answerState.clicked == -1 && (<p className="text-lg font-normal text-black">{word.yomi}</p>)}
+                        </div>
                     </div>
-                </div>
-                <div className="text-lg font-normal text-black w-3/4 p-4">
-                    <p>{word.pos}</p>
-                    <p>{word.definition}</p>
-                </div>
-            </div>)}
+                    <div className="text-lg font-normal text-black w-3/4 p-4">
+                        <p>{word.pos}</p>
+                        <p>{word.definition}</p>
+                    </div>
+                </div>)}
+            </div>
         </div>
     );
 }
 
-const ButtonGrid = ( { wordList, answerList, setCurrentWord, setVisible } ) => {
+const ButtonGrid = ( { answerList, setAnswerState, answerState } ) => {
 
-    const [answerState, setAnswerState] = useState({ clicked: -1, result: ''});
+    
 
     const toNextWord = ( result, i ) => {
         setAnswerState({ clicked: i, result: result });
-        setTimeout(() => {
-            setCurrentWord(getNextWord(wordList));
-            setAnswerState({ clicked: -1, result: ''});
-            setVisible(false);
-        }, 1500);
     }
 
-    let feedback = (answerState.result == "correct" ? "正解！" : "次は頑張ってね！");
     return(
         <div className={styles.response}>
             <div className={styles.buttonGrid}>
                 {answerList.map((option, i) =>             
                 <AnswerButton key={"button" + i} i={i} answerState={answerState} option={option} toNextWord={toNextWord}/>)}
-            </div>
-            <div className={styles.feedback} style={{"visibility": (answerState.clicked == -1 ? "hidden" : "visible")} }>
-                <p>{feedback}</p>
             </div>
         </div>
     );
@@ -292,7 +324,7 @@ const AnswerButton = ( { i, option, answerState, toNextWord } ) => {
 function getNextWord(words) {
     let word = words.pop();
     console.log("Got word " + word);
-    return { word: word, words: words};
+    return { word: word, words: words, answerList: generateAnswers(word)};
 }
 
 function getRandomWord(words) {
