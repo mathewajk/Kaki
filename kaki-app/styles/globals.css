@@ -33,7 +33,7 @@ a {
 }
 
 nav {
-  @apply relative bg-white;
+  @apply relative bg-white dark:bg-gray-900 dark:text-white;
   z-index: 10;
 }
 
@@ -87,7 +87,7 @@ main {
 
 @media (prefers-color-scheme: dark) {
     main {
-    color:  #b8b8db;
+    color:  #f1f1fb;
   }
 }
 

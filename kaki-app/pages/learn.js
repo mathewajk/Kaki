@@ -278,7 +278,7 @@ const Definition = ( { word, answerState, lang, visible, setVisible } ) => {
     }
  
     return(
-        <div className={(visible ? '' : "hidden") + " rounded-md w-3/4 h-1/2 shadow-lg absolute md:shadow-none md:relative md:block bg-gray-200 md:basis-1/4 border-t-4 border-gray-200 md:w-full"}>
+        <div className={(visible ? '' : "hidden") + " rounded-md w-3/4 h-1/2 shadow-lg absolute md:shadow-none md:relative md:block bg-gray-200 dark:bg-gray-900 dark:border-gray-600 md:basis-1/4 border-t-4 border-gray-200 md:w-full"}>
             <div className="overflow-scroll h-full">
                 {! visible && (<div onClick={handleClick} className="hover:cursor-pointer flex w-full h-full items-center justify-center">
                     <button onClick={handleClick}>{text}</button>
@@ -287,13 +287,13 @@ const Definition = ( { word, answerState, lang, visible, setVisible } ) => {
                 <div style={{visibility: (visible ? "visible" : "hidden")}} className="flex flex-col items-center align-center md:flex-row h-full">
                     <div className="flex border-b-2 md:border-b-0 md:border-r-2 border-gray-400 w-1/2 md:w-1/4 justify-center items-center text-center px-1">
                         <div className="mt-2">
-                            <p className="text-orange-700 text-5xl md:text-2xl mb-3">{word.tango}</p>
-                            {answerState.clicked != -1 && (<p className="text-lg font-normal text-black"><Pitch word={word}/></p>)}
-                            {answerState.clicked == -1 && (<p className="text-lg font-normal text-black">{word.yomi}</p>)}
+                            <p className="text-orange-700 dark:text-orange-500 text-5xl md:text-2xl mb-3">{word.tango}</p>
+                            {answerState.clicked != -1 && (<p className="text-lg font-normal text-black dark:text-white"><Pitch word={word}/></p>)}
+                            {answerState.clicked == -1 && (<p className="text-lg font-normal text-black dark:text-white">{word.yomi}</p>)}
                         </div>
                     </div>
-                    <div className="text-lg font-normal text-black w-3/4 p-4">
-                        <p className="text-base text-italic text-gray-700">{word.pos}</p>
+                    <div className="text-lg font-normal text-black dark:text-white w-3/4 p-4">
+                        <p className="text-base text-italic text-gray-700 dark:text-gray-100 ">{word.pos}</p>
                         <p>{word.definition}</p>
                     </div>
                 </div>)}

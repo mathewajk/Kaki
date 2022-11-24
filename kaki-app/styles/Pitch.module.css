@@ -45,14 +45,6 @@
     background-color: #330D00;
 }
 
-
-@media (prefers-color-scheme: dark) {
-    .mora[data-pitch="high"]::before, .mora[data-pitch="start"]::after, 
-    .mora[data-pitch="low"]::before, .mora[data-pitch="start"]::before {
-        @apply bg-gray-200;
-    }
-}
-
 .mora[data-pitch="peak"]::before, .mora[data-pitch="peak"]::after {
     background-color: orangered;
 }
@@ -80,4 +72,16 @@
     clip: rect(0, 0, 0, 0);
     word-wrap: normal;
     border: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+    .mora[data-pitch="high"]::before, .mora[data-pitch="start"]::after, 
+    .mora[data-pitch="low"]::before, .mora[data-pitch="start"]::before {
+        @apply bg-gray-200;
+    } 
+
+    button .mora[data-pitch="high"]::before, button .mora[data-pitch="start"]::after, 
+    button .mora[data-pitch="low"]::before, button .mora[data-pitch="start"]::before {
+        background-color: #330D00;
+    } 
 }
