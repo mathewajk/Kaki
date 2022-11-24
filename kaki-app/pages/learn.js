@@ -121,67 +121,60 @@ function Learn( { lang } ) {
 function StudyPage( { lang, session, category, setCategory } ) {
 
     const username = session?.user.username;
-
+    const [studyState, setStudyState] = useState({word: "", words: [], answerList: []});
+    
     const { data, loading, error } = useQuery(QUERY_STUDY_ITEMS, {
         variables: { username: username, category: category }
     });
 
     const [mutateStudyItem, mutationStatus] = useMutation(CREATE_STUDY_ITEM, {
         refetchQueries: [ 
-          {query: QUERY_STUDY_ITEMS, variables: { username: username, category: category }}, // DocumentNode object parsed with gql
-          'StudyItemsAndWords' // Query name 
+            {
+                query: QUERY_STUDY_ITEMS, 
+                variables: { username: username, category: category }
+            },
+            'StudyItemsAndWords'
         ]
       });
 
-    console.log(mutationStatus);
-    if (loading || mutationStatus.loading) return(
-        <section className={styles.studyCard}>
-        <div className="text-2xl">
-            <h2 className={styles.tango}>{lang === "EN" ? "Loading study session..." : "読み込み中..."}</h2>
-        </div>
-        </section>);
+    if (loading || mutationStatus.loading) return(<Loading lang={lang}/>);
         
-    if (error || mutationStatus.error) {
-        return <pre>{error.message} {mutationStatus?.error.message}</pre>;
+    if (error) {
+        return <pre>{error.message}</pre>;
+    }
+
+    if (mutationStatus.error) {
+        return <pre>{mutationStatus.error.message}</pre>;
     }
     
-    // Shuffle currently-due words. TODO: Will need to shuffle according to time due?
-
-    let wordList;  
-    if(username) {
-        if (data.studyItems.length == 0) {
-       let ids = Object.values(data.words).map(item => parseInt(item.id));
-       mutateStudyItem({variables: {username: username, tangoId: ids, due: Date.now().toString()}});
-       return(
-        <section className={styles.studyCard}>
-        <div className="text-2xl">
-            <h2 className={styles.tango}>{lang === "EN" ? "Loading study session..." : "読み込み中..."}</h2>
-        </div>
-        </section>);
+    useEffect(() => {
+        if(username) {
+            if (data.studyItems.length == 0) {
+                let ids = Object.values(data.words).map(item => parseInt(item.id));
+                mutateStudyItem({variables: {username: username, tangoId: ids, due: Date.now().toString()}});
+                wordList = data.studyItems.slice();
+            }
         }
-        wordList = data.studyItems.slice();
-    }
+        
+        let wordList; 
+        wordList = fisherYates(data.words); // TODO
+        setStudyState(getNextWord(wordList));
+    }, [data]);
 
-    // Temp
-    wordList = fisherYates(data.words);
-    let initialState = getNextWord(wordList);
-
+    // Shuffle currently-due words. TODO: Will need to shuffle according to time due?
+   
+    if (studyState.word === '') return <Loading lang={lang}/>
+    
     return(
         <main className={styles.content}>
-            <StudyCard lang={lang} chooseCategory={setCategory} currentWord={initialState.word} wordList={initialState.words}/>
+            <StudyCard lang={lang} chooseCategory={setCategory} studyState={studyState} setStudyState={setStudyState}/>
         </main>
     );
 }
 
-const StudyCard = ( { lang, currentWord, setCategory, wordList }) => {
+const StudyCard = ( { lang, studyState, setStudyState, setCategory }) => {
 
-    const [studyState, setStudyState] = useState({word: currentWord, words: wordList, answerList: generateAnswers(currentWord) });
     const [answerState, setAnswerState] = useState({ clicked: -1, result: ''});
-
-    console.log(wordList);
-    if(wordList != studyState.words) {
-        setStudyState( {word: currentWord, words: wordList, answerList: generateAnswers(currentWord) });
-    }
 
     let feedback = (lang === "EN" ? "Correct!" : "正解！");
     if(answerState.result === "incorrect") {
@@ -189,7 +182,7 @@ const StudyCard = ( { lang, currentWord, setCategory, wordList }) => {
     }
 
     const toNextWordB = () => {
-        setStudyState(getNextWord(wordList));
+        setStudyState(getNextWord(studyState.words));
         setAnswerState({ clicked: -1, result: ''});
     }
 
@@ -205,10 +198,10 @@ const StudyCard = ( { lang, currentWord, setCategory, wordList }) => {
 
     return(
         <section relative className="flex flex-col w-full h-full text-lg md:text-xl lg:text-2xl">
-            <section className="relative flex flex-col w-full h-full md:h-3/4 overflow-hidden md:overflow-scroll shadow-md">
+            <section className="relative flex flex-col w-full h-full justify-center items-center md:h-3/4 overflow-hidden md:overflow-scroll shadow-md">
                 <div className="flex flex-col justify-evenly h-full md:h-3/4 w-full md:w-3/4">
                     <div class="flex justify-center">
-                        <h2 className={styles.tango + " text-7xl md:text-8xl lg:text-9xl"}>{studyState.word?.tango}</h2>
+                        <h2 className={styles.tango + " text-7xl md:text-8xl lg:text-9xl mb-2"}>{studyState.word?.tango}</h2>
                     </div>
                     <div>
                         <ButtonGrid answerList={studyState.answerList} setAnswerState={setAnswerState} answerState={answerState} />
