@@ -155,6 +155,9 @@ const QuizWrapper = ( { lang, user, category, setCategory } ) => {
         
         // Don't try to check study items if no one is logged in
         if(!username) return;
+    
+        // Avoid multiple queries?
+        if(studyItemStatus.loading) return;
 
         // If we don't have any data yet, query it
         if(!studyItemStatus.data) {
@@ -163,18 +166,25 @@ const QuizWrapper = ( { lang, user, category, setCategory } ) => {
             return;
         }
         
+        console.log(studyItemStatus.data.studyItems);
+        
         // If there is no study data for this category, create it
         // Otherwise, initialize the study session
         if (studyItemStatus.data.studyItems.length == 0) {
             queryWords();
         } else {
-            setStudyState(getNextWord(fisherYates(studyItemStatus.data.studyItems)));
+            let state = getNextWord(fisherYates(studyItemStatus.data.studyItems));
+            console.log(state);
+            setStudyState(state);
         }
 
     }, [studyItemStatus.data]);
 
     useEffect(() => {
         console.log("Word data has changed!");
+
+        // Avoid multiple queries?
+        if(wordStatus.loading) return;
 
         // If we don't have any data yet, query it
         if(!wordStatus.data) {
@@ -186,10 +196,12 @@ const QuizWrapper = ( { lang, user, category, setCategory } ) => {
         // If we're querying because the user needs to add words, run mutation
         // Otherwise, initialize a non-logged-in study session
         if(username) {
-            let ids = Object.values(data.words).map(item => parseInt(item.id));
-            mutateStudyItem({variables: {username: username, tangoId: ids, due: Date.now().toString()}});
+            let ids = Object.values(wordStatus.data.words).map(item => parseInt(item.id));
+            //mutateStudyItem({variables: {username: username, tangoId: ids, due: Date.now().toString()}});
         } else {
-            setStudyState(getNextWord(fisherYates(wordStatus.data.words)));
+            let state = getNextWord(fisherYates(wordStatus.data.words));
+            console.log(state);
+            setStudyState(state);
         }
     }, [wordStatus.data]);
     
@@ -218,7 +230,7 @@ const StudyCard = ( { lang, studyState, setStudyState, setCategory }) => {
         
         if(answerState.clicked != -1) {
             if(e.code === 'Enter' || e.code === 'ArrowRight'){
-                toNextWordB();
+                toNextWord();
             }
         }
     
@@ -258,7 +270,7 @@ const StudyCard = ( { lang, studyState, setStudyState, setCategory }) => {
         setAnswerState({ clicked: -1, result: ''});
     }
 
-    if(studyState.word == null && studyState.words.length == 0) {
+    if(studyState.word == null && studyState.words == null) {
         return(
             <section className={styles.studyCard}>
                 <div className="text-2xl">
@@ -382,8 +394,14 @@ const AnswerButton = ( { i, option, answerState, toNextWord } ) => {
 }
 
 function getNextWord(words) {
+    console.log(words);
     let word = words.pop();
-    console.log("Got word " + word);
+    console.log(word);
+    
+    if(!word) return { word: null, words: null, answerList: null};
+
+    if(word.__typename === "StudyItemType")
+        return { word: word.item, words: words, answerList: generateAnswers(word.item)};
     return { word: word, words: words, answerList: generateAnswers(word)};
 }
 
@@ -393,6 +411,8 @@ function getRandomWord(words) {
 
 function generateAnswers(word) {
    
+    if(!word) return [];
+
     let morae = getMorae(word.yomi);
     let answers = [];
     let correctAnswer = {};
