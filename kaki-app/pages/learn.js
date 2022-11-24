@@ -175,7 +175,13 @@ function StudyPage( { lang, session, category, setCategory } ) {
 const StudyCard = ( { lang, studyState, setStudyState, setCategory }) => {
 
     const [answerState, setAnswerState] = useState({ clicked: -1, result: ''});
+    const [visible, setVisible] = useState(false);
 
+    // Hide info when word changes
+    useEffect(() => {
+        setVisible(false)
+    }, [studyState.word]);
+    
     let feedback = (lang === "EN" ? "Correct!" : "正解！");
     if(answerState.result === "incorrect") {
         feedback = (lang === "EN" ? "Too bad!" : "次は頑張ってね！");
@@ -196,39 +202,68 @@ const StudyCard = ( { lang, studyState, setStudyState, setCategory }) => {
         );
     }
 
+    function handleClick(e) {
+        e.preventDefault();
+        setVisible(!visible);
+    }
+
+    const handleInput = (e) => {
+        console.log(e.code);
+		if(answerState.clicked != -1) {
+            if(e.code === 'Enter' || e.code === 'ArrowRight'){
+                toNextWordB();
+            }
+        }
+
+        if(e.code === 'KeyD') {
+            setVisible(!visible);
+        }
+
+        if(e.code === 'Digit1') {
+            setAnswerState({clicked: 0});
+        }
+
+        if(e.code === 'Digit2' && studyState.answerList.length >= 2) {
+            setAnswerState({clicked: 1});
+        }
+
+        if(e.code === 'Digit3' && studyState.answerList.length >= 3) {
+            setAnswerState({clicked: 2});
+        }
+
+        if(e.code === 'Digit4' && studyState.answerList.length >= 4) {
+            setAnswerState({clicked: 3});
+        }
+	}
+
     return(
-        <section relative className="flex flex-col w-full h-full text-lg md:text-xl lg:text-2xl">
+        <section relative tabIndex={0} onKeyDown={handleInput} className="flex flex-col w-full h-full text-lg md:text-xl lg:text-2xl items-center content-center justify-center">
             <section className="relative flex flex-col w-full h-full justify-center items-center md:h-3/4 overflow-hidden md:overflow-scroll shadow-md">
-                <div className="flex flex-col justify-evenly h-full md:h-3/4 w-full md:w-3/4">
+                <div className="relative flex flex-col justify-evenly h-full md:h-3/4 w-full md:w-3/4">
+                    <div className={(visible ? '' : 'hidden') + " absolute h-full w-full bg-white/50 md:hidden"}/>
                     <div class="flex justify-center">
-                        <h2 className={styles.tango + " text-7xl md:text-8xl lg:text-9xl mb-2"}>{studyState.word?.tango}</h2>
+                    <h2 className={styles.tango + " text-7xl md:text-8xl lg:text-9xl mb-2"}>{studyState.word?.tango}</h2>
                     </div>
                     <div>
                         <ButtonGrid answerList={studyState.answerList} setAnswerState={setAnswerState} answerState={answerState} />
                     </div>
                     <div className="text-center" style={{"visibility": (answerState.clicked == -1 ? "hidden" : "visible")} }>
                         <button className="kaki-button" onClick={() => toNextWordB()}>{feedback} →</button>
-                    </div>
+                    </div>       
                 </div>
             
                 <div className="md:absolute bottom-0 flex w-full justify-between md:justify-end items-end pb-2">
-                    <button className="text-2xl block md:hidden rounded-md bg-gray-400 px-3 ml-4">Info</button>
+                <button onClick={handleClick} className="text-sm block md:hidden rounded-md bg-gray-400 p-3 ml-4">{visible ? "Hide info" : "Show info"}</button>
                     <ChooseCategory setCategory={setCategory} displayStyle={"menu"}/>
                 </div>
             </section>
-            <Definition word={studyState.word} answerState={answerState} lang={lang}/>
+            <Definition word={studyState.word} answerState={answerState} lang={lang} visible={visible} setVisible={setVisible}/>
         </section>
     );
 }
 
-const Definition = ( { word, answerState, lang } ) => {
+const Definition = ( { word, answerState, lang, visible, setVisible } ) => {
     
-    const [visible, setVisible] = useState(false);
-
-    // Hide info when word changes
-    useEffect(() => {
-        setVisible(false)
-    }, [word]);
 
     function handleClick(e) {
         e.preventDefault();
@@ -241,22 +276,22 @@ const Definition = ( { word, answerState, lang } ) => {
     }
  
     return(
-        <div className="hidden md:block bg-gray-200 h-1/4 border-t-4 border-gray-200 w-full">
+        <div className={(visible ? '' : "hidden") + " rounded-md w-3/4 h-1/2 shadow-lg absolute md:shadow-none md:relative md:block bg-gray-200 md:h-1/4 border-t-4 border-gray-200 md:w-full"}>
             <div className="overflow-scroll h-full">
                 {! visible && (<div onClick={handleClick} className="hover:cursor-pointer flex w-full h-full items-center justify-center">
                     <button onClick={handleClick}>{text}</button>
                     </div>)}
                 {visible && (
-                <div style={{visibility: (visible ? "visible" : "hidden")}} className="flex flex-row h-full">
-                    <div className="flex border-r-2 border-gray-400 w-1/4 justify-center items-center text-center px-1">
-                        <div className="h-1/2">
-                            <p className="text-orange-700 text-2xl mb-3">{word.tango}</p>
+                <div style={{visibility: (visible ? "visible" : "hidden")}} className="flex flex-col items-center align-center md:flex-row h-full">
+                    <div className="flex md:border-r-2 border-gray-400 w-1/2 md:w-1/4 justify-center items-center text-center px-1">
+                        <div className="mt-2">
+                            <p className="text-orange-700 text-5xl md:text-2xl mb-3">{word.tango}</p>
                             {answerState.clicked != -1 && (<p className="text-lg font-normal text-black"><Pitch word={word}/></p>)}
                             {answerState.clicked == -1 && (<p className="text-lg font-normal text-black">{word.yomi}</p>)}
                         </div>
                     </div>
-                    <div className="text-lg font-normal text-black w-3/4 p-4">
-                        <p>{word.pos}</p>
+                    <div className="text-lg font-normal text-black border-t-2 md:border-t-0 border-gray-400 md:w-3/4 p-4">
+                        <p className="text-base text-italic text-gray-700">{word.pos}</p>
                         <p>{word.definition}</p>
                     </div>
                 </div>)}
