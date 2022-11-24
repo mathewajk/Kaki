@@ -244,7 +244,7 @@ const StudyCard = ( { lang, studyState, setStudyState, setCategory }) => {
                 <div className="relative flex flex-col justify-evenly w-full basis-full">
                     <div className={(visible ? '' : 'hidden') + " absolute h-full w-full bg-white/50 md:hidden"}/>
                     <div class="flex justify-center">
-                    <h2 className={styles.tango + " my-2 text-7xl md:text-8xl lg:text-9xl mb-2"}>{studyState.word?.tango}</h2>
+                    <h2 className={styles.tango + " my-2 text-7xl md:text-7xl lg:text-7xl mb-2"}>{studyState.word?.tango}</h2>
                     </div>
                     <div>
                         <ButtonGrid answerList={studyState.answerList} setAnswerState={setAnswerState} answerState={answerState} />
