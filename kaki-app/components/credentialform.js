@@ -130,14 +130,14 @@ const CredentialForm = ( { type, lang } ) => {
            </div>)}
 
             { (type === "login") && (
-                <button className="kaki-button mt-2 w-full leading-tight shadow-md" onClick={handleCredentialLogin}>
+                <button type="submit" className="mt-2 w-full leading-tight shadow-md" onClick={handleCredentialLogin}>
                   {lang === "EN"? "Log in" : "ログイン"}
                 </button>
               ) 
             }
 
             { (type === "register") && (
-                <button className="kaki-button mt-2 w-full leading-tight shadow-md" onClick={handleRegistration}>
+                <button type="submit" className="kaki-button mt-2 w-full leading-tight shadow-md" onClick={handleRegistration}>
                   {lang === "EN"? "Register" : "登録"}
                 </button>
               )

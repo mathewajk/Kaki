@@ -46,7 +46,7 @@ const NavLinks = ( {session, lang, setLang} ) => {
                     <li className="block py-2 md:p-0">
                     <div className="sr-only">User menu</div>
                     <Menu as="div" className="relative inline-block text-left z-20">
-                    <Menu.Button className="kaki-button inline-flex w-full justify-center text-sm font-medium px-4 py-2">{lang === "EN"? "Hi, " + session.user.name.split(" ")[0] + "!" : session.user.name + "様"} 
+                    <Menu.Button className="inline-flex w-full justify-center text-sm font-medium px-4 py-2">{lang === "EN"? "Hi, " + session.user.name.split(" ")[0] + "!" : session.user.name + "様"} 
                     <ChevronDownIcon
                         className="ml-2 -mr-1 h-5 w-5"
                         aria-hidden="true"/>
@@ -82,12 +82,12 @@ const NavLinks = ( {session, lang, setLang} ) => {
                     </Menu.Items>
                 </Menu>
                 </li>)}
-                { !session && (<li className="block py-2 pl-3 pr-4 text-white md:bg-transparent md:p-0 dark:text-white"><button className="kaki-button"><Link href="/login">{lang === "EN"? "Log in" : "ログアイン"}</Link></button></li>) }
+                { !session && (<li className="block py-2 pl-3 pr-4 text-white md:bg-transparent md:p-0 dark:text-white"><button type="button"><Link href="/login">{lang === "EN"? "Log in" : "ログアイン"}</Link></button></li>) }
                 <li className="block py-2 md:p-0"><Link className="font-bold p-2 hover:text-orange-500" onClick={() => setLang(lang === "EN" ? "JA" : "EN")} href="#">{lang}</Link></li>
             </ul>
         </div>
         <div className="flex md:hidden">
-            <button data-collapse-toggle="navbar-default" type="button" onClick={() => toggleMenu()} className="inline-flex items-center p-2 mr-3 text-sm text-orange-500 dark:text-gray-300 rounded-lg h-10" aria-controls="navbar-default" aria-expanded="false">
+            <button type="button" data-collapse-toggle="navbar-default" onClick={() => toggleMenu()} className="inline-flex items-center p-2 mr-3 text-sm text-orange-500 dark:text-gray-300 rounded-lg h-10" aria-controls="navbar-default" aria-expanded="false">
                 <span className="sr-only">Open main menu</span>
                 <svg
                     xmlns="http://www.w3.org/2000/svg"

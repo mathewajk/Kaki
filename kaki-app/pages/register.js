@@ -19,7 +19,7 @@ function Register( { lang } ) {
             <p className="text-center font-bold mx-4 mb-0">{lang === "EN"? "OR" : "または"}</p>
         </div>
 
-        <div className="kaki-button mb-5 text-center items-center"><button onClick={() => signIn('google', { callbackUrl: 'http://localhost:3000' })}>{lang === "EN"? "Log in with Google" : "Googleでログインする"}</button></div>
+        <div className="kaki-button mb-5 text-center items-center"><button type="button" onClick={() => signIn('google', { callbackUrl: 'http://localhost:3000' })}>{lang === "EN"? "Log in with Google" : "Googleでログインする"}</button></div>
         
         </div>
     </div>
