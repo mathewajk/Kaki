@@ -272,7 +272,7 @@ const StudyCard = ( { lang, studyState, setStudyState, setCategory }) => {
 
     if(studyState.word == null && studyState.words == null) {
         return(
-            <section className={styles.studyCard}>
+            <section className="w-3/4 text-center">
                 <div className="text-2xl">
                     <h2 className={styles.tango}>{lang === "EN" ? "Congrats! You finished studying for today!" : "おめでとうございます！今日の学習が終わりました。"}</h2>
                 </div>
@@ -294,7 +294,7 @@ const StudyCard = ( { lang, studyState, setStudyState, setCategory }) => {
                     </div>
                     <ButtonGrid answerList={studyState.answerList} setAnswerState={setAnswerState} answerState={answerState}/>
                     <div className="text-center" style={{"visibility": (answerState.clicked == -1 ? "hidden" : "visible")} }>
-                        <button className="my-2" onClick={() => toNextWord()}>{feedback} →</button>
+                        <button type="button" className="my-2" onClick={() => toNextWord()}>{feedback} →</button>
                     </div>       
                 </div>
                 <div className="flex w-full justify-between md:justify-end items-end pb-2">
@@ -322,8 +322,8 @@ const Definition = ( { word, answerState, lang, visible, setVisible } ) => {
     return(
         <div className={(visible ? '' : "hidden") + " rounded-md w-3/4 h-1/2 shadow-lg absolute md:shadow-none md:relative md:block bg-gray-200 dark:bg-gray-900 dark:border-gray-600 md:basis-1/4 border-t-4 border-gray-200 md:w-full"}>
             <div className="overflow-scroll h-full">
-                {! visible && (<div onClick={handleClick} className="hover:cursor-pointer flex w-full h-full items-center justify-center">
-                    <button onClick={handleClick}>{text}</button>
+                {! visible && (<div onClick={handleClick} className="text-gray-900 hover:cursor-pointer hover:text-orange-500 flex w-full h-full items-center justify-center">
+                    <button className="font-normal bg-transparent hover:bg-transparent hover:text-orange-500 shadow-none" onClick={handleClick}>{text}</button>
                     </div>)}
                 {visible && (
                 <div style={{visibility: (visible ? "visible" : "hidden")}} className="flex flex-col items-center align-center md:flex-row h-full">

@@ -40,9 +40,13 @@ nav::after {
   background: linear-gradient(45deg, rgba(201, 126, 13, 0.758) 0%, rgba(114, 161, 28, 0.758) 50%);
 }
 
-button, button[type="button"], button[type="submit"] {
+button {
+  @apply p-2 font-bold cursor-pointer rounded-md transition shadow-md duration-150 ease-in-out;
+}
+
+button[type="button"], button[type="submit"] {
   background-color: rgb(255, 115, 0);
-  @apply p-2 font-bold cursor-pointer rounded-md transition text-white shadow-md duration-150 ease-in-out;
+  @apply text-white
 }
 
 button:hover {
