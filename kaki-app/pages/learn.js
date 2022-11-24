@@ -137,17 +137,8 @@ function StudyPage( { lang, session, category, setCategory } ) {
         ]
       });
 
-    if (loading || mutationStatus.loading) return(<Loading lang={lang}/>);
-        
-    if (error) {
-        return <pre>{error.message}</pre>;
-    }
-
-    if (mutationStatus.error) {
-        return <pre>{mutationStatus.error.message}</pre>;
-    }
-    
     useEffect(() => {
+        if(!data) return;
         if(username) {
             if (data.studyItems.length == 0) {
                 let ids = Object.values(data.words).map(item => parseInt(item.id));
@@ -160,6 +151,16 @@ function StudyPage( { lang, session, category, setCategory } ) {
         wordList = fisherYates(data.words); // TODO
         setStudyState(getNextWord(wordList));
     }, [data]);
+
+    if (loading || mutationStatus.loading) return(<Loading lang={lang}/>);
+        
+    if (error) {
+        return <pre>{error.message}</pre>;
+    }
+
+    if (mutationStatus.error) {
+        return <pre>{mutationStatus.error.message}</pre>;
+    }
 
     // Shuffle currently-due words. TODO: Will need to shuffle according to time due?
    
