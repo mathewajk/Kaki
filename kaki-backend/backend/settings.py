@@ -221,7 +221,7 @@ USE_TZ = True
 
 CORS_ORIGIN_WHITELIST = [
     'https://kaki-backend.up.railway.app',
-    'https://kaki-eta.vercel.app',
+    'https://kaki-study.vercel.app',
     'https://kaki-narquelion.vercel.app',
     'http://localhost:3000',
     'http://localhost:8000',
@@ -231,7 +231,7 @@ CORS_ORIGIN_WHITELIST = [
 
 CSRF_TRUSTED_ORIGINS = [
     'https://kaki-backend.up.railway.app',
-    'https://kaki-eta.vercel.app',
+    'https://kaki-study.vercel.app',
     'https://kaki-narquelion.vercel.app',
     'http://127.0.0.1:3000',
     'http://127.0.0.1:8000',
@@ -241,7 +241,7 @@ CSRF_TRUSTED_ORIGINS = [
 
 CSRF_ALLOWED_ORIGINS = [
     'https://kaki-backend.up.railway.app',
-    'https://kaki-eta.vercel.app',
+    'https://kaki-study.vercel.app',
     'https://kaki-narquelion.vercel.app',
     'http://127.0.0.1:3000',
     'http://127.0.0.1:8000',
