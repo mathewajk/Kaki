@@ -59,7 +59,7 @@ const ChooseCategory = ( { lang, setCategory, displayStyle } ) => {
                 e.preventDefault();
                 setCategory(category);
             }
-            return <button key={"cat-button-" + i} tag={"cat-button-" + i} className="text-sm py-1 px-2 mr-4" style={{'background-color': 'rgb(' + (0 + 60 * i) + ', ' + (160 - 20 * i) + ', ' + (180 - 40 * i) + ')'}} onClick={handleClick}>{category.toUpperCase()}</button>
+            return <button key={"cat-button-" + i} tag={"cat-button-" + i} className="text-sm text-white py-1 px-2 mr-4" style={{'background-color': 'rgb(' + (0 + 60 * i) + ', ' + (160 - 20 * i) + ', ' + (180 - 40 * i) + ')'}} onClick={handleClick}>{category.toUpperCase()}</button>
             })
         }
         </div>
@@ -78,7 +78,7 @@ const ChooseCategory = ( { lang, setCategory, displayStyle } ) => {
                         e.preventDefault();
                         setCategory(category);
                     }
-                    return <button className="py-8 rounded-md text-white" key={"cat-button-" + i} tag={"cat-button-" + i} style={{'backgroundColor': 'rgb(' + (0 + 60 * i) + ', ' + (160 - 20 * i) + ', ' + (180 - 40 * i) + ')'}} onClick={handleClick}>{category}</button>
+                    return <button className="py-8 rounded-md text-white" key={"cat-button-" + i} tag={"cat-button-" + i} style={{'backgroundColor': 'rgb(' + (0 + 60 * i) + ', ' + (160 - 20 * i) + ', ' + (180 - 40 * i) + ')'}} onClick={handleClick}>{category.toUpperCase()}</button>
                     })
                 }
                 </div>
