@@ -197,7 +197,7 @@ const QuizWrapper = ( { lang, user, category, setCategory } ) => {
     if (wordStatus.loading || studyItemStatus.loading || mutationStatus.loading) return(<Loading lang={lang}/>);
         
     if (wordStatus.error || studyItemStatus.error || mutationStatus.error) {
-        return <pre>Error!</pre>;
+        return <pre>{wordStatus?.error}{studyItemStatus?.error}{mutationStatus?.error}</pre>;
     }
 
     if (studyState.word === '') return <Loading lang={lang}/>
@@ -213,7 +213,9 @@ const StudyCard = ( { lang, studyState, setStudyState, setCategory }) => {
     const [visible, setVisible] = useState(false);
 
     const handleInput = (e) => {
+        
         console.log(e.code);
+        
         if(answerState.clicked != -1) {
             if(e.code === 'Enter' || e.code === 'ArrowRight'){
                 toNextWordB();
@@ -251,7 +253,7 @@ const StudyCard = ( { lang, studyState, setStudyState, setCategory }) => {
         feedback = (lang === "EN" ? "Too bad!" : "次は頑張ってね！");
     }
 
-    const toNextWordB = () => {
+    const toNextWord = () => {
         setStudyState(getNextWord(studyState.words));
         setAnswerState({ clicked: -1, result: ''});
     }
@@ -280,7 +282,7 @@ const StudyCard = ( { lang, studyState, setStudyState, setCategory }) => {
                     </div>
                     <ButtonGrid answerList={studyState.answerList} setAnswerState={setAnswerState} answerState={answerState}/>
                     <div className="text-center" style={{"visibility": (answerState.clicked == -1 ? "hidden" : "visible")} }>
-                        <button className="kaki-button my-2" onClick={() => toNextWordB()}>{feedback} →</button>
+                        <button className="my-2" onClick={() => toNextWord()}>{feedback} →</button>
                     </div>       
                 </div>
                 <div className="flex w-full justify-between md:justify-end items-end pb-2">
