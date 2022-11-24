@@ -31,10 +31,6 @@ const CredentialForm = ( { type, lang } ) => {
   const handleChange = (prop) => (event) => {
     setFormValues({ ...formValues, [prop]: event.target.value });
   };
-
-  // handleChange(event) {
-  //   this.setState({[event.target.name]: event.target.value});
-  // }
   
   const handleClickShowPassword = (e) => {
     e.preventDefault();
@@ -113,7 +109,7 @@ const CredentialForm = ( { type, lang } ) => {
             <div className="form-group mb-2">
                 <label htmlFor="input-password-for-credentials-provider" className="form-label inline-block my-2">{lang === "EN"? "Password" : "パスワード"}</label>
                 <div className="flex relative justify-end items-center">
-                    <button className="absolute mr-1 bg-transparent hover:bg-transparent text-gray-800" onClick={handleClickShowPassword}>{formValues.showPassword ? (<EyeIcon
+                    <button className="absolute mr-1 shadow-none bg-transparent hover:bg-transparent text-gray-800 dark:text-white" onClick={handleClickShowPassword}>{formValues.showPassword ? (<EyeIcon
                 className="h-5 w-5"
                 aria-hidden="true"/>) : (<EyeSlashIcon
                     className="h-5 w-5"
@@ -124,24 +120,24 @@ const CredentialForm = ( { type, lang } ) => {
            {type === "register" && (<div className="form-group mb-2">
                 <label htmlFor="input-password-confirmation-for-credentials-provider" className="form-label inline-block my-2">{lang === "EN"? "Confirm password" : "パスワード"}</label>
                 <div className="flex relative justify-end items-center">
-                    <button className="absolute mr-1 bg-transparent hover:bg-transparent text-gray-800" onClick={handleClickShowPassword}>{formValues.showPassword ? (<EyeIcon
+                    <button className="absolute mr-1 shadow-none bg-transparent hover:bg-transparent text-gray-800 dark:text-white" onClick={handleClickShowPassword}>{formValues.showPassword ? (<EyeIcon
                 className="h-5 w-5"
                 aria-hidden="true"/>) : (<EyeSlashIcon
                     className="h-5 w-5"
                     aria-hidden="true"/>) }</button>
-                <input label="Password confirmation" required onChange={handleChange('passwordConf')} placeholder='123' value={formValues.passwordConf} id="input-password-confirmation-for-credentials-provider" type={formValues.showPasswordConfirmation ? 'text' : 'password'} className="form-control w-full px-3 py-1.5 my-2 border border-solid border-gray-300 rounded"></input>
+                <input label="Password confirmation" required onChange={handleChange('passwordConf')} placeholder='123' value={formValues.passwordConf} id="input-password-confirmation-for-credentials-provider" type={formValues.showPassword ? 'text' : 'password'} className="form-control w-full px-3 py-1.5 my-2 border border-solid border-gray-300 rounded"></input>
                 </div>
            </div>)}
 
             { (type === "login") && (
-                <button type="submit" className="kaki-button mt-2 w-full leading-tight shadow-md" onClick={handleCredentialLogin}>
+                <button className="kaki-button mt-2 w-full leading-tight shadow-md" onClick={handleCredentialLogin}>
                   {lang === "EN"? "Log in" : "ログイン"}
                 </button>
               ) 
             }
 
             { (type === "register") && (
-                <button type="submit" className="kaki-button mt-2 w-full leading-tight shadow-md" onClick={handleRegistration}>
+                <button className="kaki-button mt-2 w-full leading-tight shadow-md" onClick={handleRegistration}>
                   {lang === "EN"? "Register" : "登録"}
                 </button>
               )
