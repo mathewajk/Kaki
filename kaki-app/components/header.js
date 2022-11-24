@@ -18,7 +18,7 @@ const Header = ({lang, setLang}) => {
         <div className="flex h-10 lg:text-xl md:text-lg font-medium">
             <div className="flex items-center">
                 <Link href="/">
-                <Image src={'/kaki.png'} width={100} height={100} className="max-w-none h-4 w-4 md:h-8 md:w-8"/></Link>&nbsp;&nbsp;
+                <Image alt={"Kaki logo"} src={'/kaki.png'} width={100} height={100} className="max-w-none h-4 w-4 md:h-8 md:w-8"/></Link>&nbsp;&nbsp;
                 <Link href="/" className="hover:text-orange-500"><h3 className="font-bold">{lang === "EN"? "Kaki" : "カキ"}</h3></Link>
             </div>
         </div>

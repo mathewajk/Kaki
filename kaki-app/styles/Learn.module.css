@@ -1,65 +1,40 @@
-.feedback {
-    position: absolute;
-    top: 10px;
-    width: 71%;
-}
-
-.response .feedback p {
-    font-size: 2em;
-    color:#00a0b4;
-    margin-right: auto;
-    margin-left: auto;
-}
-
-.response {
-    @apply flex justify-center;
-    width: 100%;
-}
-
-.menuBottom {
-    position: absolute;
-    top: 10px;
-    right: 0;
-    margin-right: 2em;
-    font-size: 0.3em;
-}
-
-.content {
-    margin-top: auto;
-    margin-bottom: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
 .tango {
     color: coral;
 }
 
+.learn {
+    @apply relative h-full w-full;
+    @apply flex flex-col basis-full justify-center items-center;
+    @apply text-lg md:text-xl lg:text-2xl;
+}
+
+.categoryGrid {
+    @apply grid grid-cols-5
+}
+
+.categoryGrid button {
+    @apply text-white 
+}
+
+.categoryGrid[data-display="full"] {
+    @apply w-3/4 gap-3 md:gap-6 
+}
+
+.categoryGrid[data-display="menu"] {
+    @apply text-lg md:text-xl lg:text-2xl;
+}
+
+.categoryGrid[data-display="full"] button {
+    @apply py-4 px-3 md:py-6;
+}
+
+.categoryGrid[data-display="menu"] button {
+    @apply text-sm py-1 px-2 mr-2;
+}
+
+
 .word-info {
     background-color: rgb(255, 243, 238);
-}
-
-.studyCard {
-    width: 100%;
-    margin-top: auto;
-    margin-bottom: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-.studyItem h2 {
-    font-size: 4em;
-}
-
-.studyItem {
-    width: 75%;
-    text-align: center;
-}
-
-.studyItem p {
-    font-size: 1.5em;
 }
 
 .buttonGrid button.correct:disabled {
@@ -69,37 +44,21 @@
     background-color: rgb(238, 156, 105);
 }
 
-.categoryGrid {
-    text-align: center;
-    display: grid;
-    grid-template-columns: repeat(5, 1fr); /* define var() for num of colums; 1fr - one column per var amount */
-    gap: 1em;
-}
-
 .buttonGrid {
-    @apply grid grid-cols-1 grid-rows-4 md:grid-cols-2 md:grid-rows-2 w-1/2 md:w-3/4 gap-2 md:gap-5;
+    @apply grid grid-cols-1 grid-rows-4 md:grid-cols-2 md:grid-rows-2 w-1/2 md:w-3/4 gap-2 md:gap-5 items-center;
 }
 
 .buttonGrid button {
     background-color: rgb(232, 242, 204);
     color:#2f2f6e;
-    font-weight: 300;
-    padding-top: 1em;
-    @apply text-base md:text-lg shadow-md rounded-lg;
+    @apply text-base font-normal md:text-lg pt-3 shadow-md rounded-lg;
 }
 
 .buttonGrid button:hover:enabled {
     background-color: rgb(241, 245, 228);
-    color:#2f2f6e;
-    font-weight: 300;
-}
-
-@media (prefers-color-scheme: dark) {
 }
 
 .buttonGrid button:disabled {
     background-color: rgb(169, 173, 157);
-    color:#2f2f6e;
-    font-weight: 300;
     cursor: default;
 }

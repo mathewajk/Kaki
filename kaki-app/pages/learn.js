@@ -2,7 +2,7 @@ import styles from '../styles/Learn.module.css'
 import Pitch from "../components/pitch";
 
 import React, { useEffect, useState } from "react";
-import { useQuery, useMutation, gql } from "@apollo/client";
+import { useQuery, useLazyQuery, useMutation, gql } from "@apollo/client";
 import { useSession } from "next-auth/react";
 
 
@@ -24,7 +24,7 @@ mutation CreateStudyItem($username: String!, $tangoId: [Int]!, $due: String!) {
 }`
 
 const QUERY_STUDY_ITEMS = gql`
-query StudyItemsAndWords($username: String, $category: String) {
+query StudyItems($username: String, $category: String) {
     studyItems(username: $username, category: $category) {
         item {
             tango
@@ -35,6 +35,10 @@ query StudyItemsAndWords($username: String, $category: String) {
         }
         priority
     }
+}`
+
+const QUERY_WORDS = gql`
+query Words($category: String) {
     words(category: $category) {
         id
         tango
@@ -48,43 +52,43 @@ query StudyItemsAndWords($username: String, $category: String) {
 /* Things to look into: Children, context, redux? */
 
 const ChooseCategory = ( { lang, setCategory, displayStyle } ) => {
+    
     const categories = ["n5", "n4", "n3", "n2", "n1"];
-    
-    if(displayStyle == "menu") {
-        return (
-        <div className="categoryGrid sm:text-lg md:text-xl lg:text-2xl">
-        {
-            categories.map((category, i) => {
-            function handleClick(e) {
-                e.preventDefault();
-                setCategory(category);
-            }
-            return <button key={"cat-button-" + i} tag={"cat-button-" + i} className="text-sm text-white py-1 px-2 mr-4" style={{'background-color': 'rgb(' + (0 + 60 * i) + ', ' + (160 - 20 * i) + ', ' + (180 - 40 * i) + ')'}} onClick={handleClick}>{category.toUpperCase()}</button>
-            })
-        }
-        </div>
-        );
+    const text = {
+        'EN': 'Choose a level:',
+        'JA': '挑戦するレベルを選択してください。'
     }
-    
+
     return (
-        <main className={styles.content}>
-            <section className={styles.studyCard}>
-                <div className={styles.studyItem}>
-                <p className="mb-8">{lang === "EN" ? "Choose a level:" : "挑戦するレベルを選択してください。"}</p>
-                <div className={styles.categoryGrid}>
+        <>
+            {   // Display prompt when in "full" mode 
+                displayStyle === "full" && (<p className="mb-8 text-2xl">{text[lang]}</p>)
+            }
+
+            <div className={styles.categoryGrid} data-display={displayStyle}>
                 {
                     categories.map((category, i) => {
-                    function handleClick(e) {
-                        e.preventDefault();
-                        setCategory(category);
-                    }
-                    return <button className="py-8 rounded-md text-white" key={"cat-button-" + i} tag={"cat-button-" + i} style={{'backgroundColor': 'rgb(' + (0 + 60 * i) + ', ' + (160 - 20 * i) + ', ' + (180 - 40 * i) + ')'}} onClick={handleClick}>{category.toUpperCase()}</button>
+                        
+                        const handleClick = (e) => {
+                            e.preventDefault();
+                            setCategory(category);
+                        }
+                        
+                        const color = `rgb(${0 + 60 * i}, ${160 - 20 * i}, ${180 - 40 * i})`;
+                        const id = `cat-button-${i}`
+                        return (
+                            <button 
+                                key={id} 
+                                tag={id} 
+                                style={{'backgroundColor': color}} 
+                                onClick={handleClick}>
+                                {category.toUpperCase()}
+                            </button>
+                        )
                     })
                 }
-                </div>
-                </div>
-            </section>
-        </main>
+            </div>
+        </>
     );
 }
 
@@ -96,7 +100,7 @@ const Loading = ( { lang } ) => {
     };
 
     return(
-        <section className={styles.studyCard}>
+        <section className="w-3/4 text-center">
         <div className="text-2xl">
             <h2 className={styles.tango}>{text[lang]}</h2>
         </div>
@@ -106,25 +110,34 @@ const Loading = ( { lang } ) => {
 
 function Learn( { lang } ) {
 
-    const [category, setCategory] = useState('');
+    
     const { data: session, status } = useSession();
+    const [category, setCategory] = useState('');
+
+    console.log("Rendering top-level (session) component.");
 
     return(
-        <>
+        <section className={styles.learn}>
             {status === "loading" && (<Loading lang={lang}/>)}
-            {category === '' && (<ChooseCategory lang={lang} setCategory={setCategory}/>)}
-            {category !== '' && (<StudyPage lang={lang} session={session} category={category} setCategory={setCategory}/>)}
-        </>
+            {category !== '' && (<QuizWrapper lang={lang} user={session?.user} category={category} setCategory={setCategory}/>)}
+            {category === '' && (<ChooseCategory lang={lang} displayStyle={"full"} setCategory={setCategory}/>)}
+        </section>
     );
 }
 
-function StudyPage( { lang, session, category, setCategory } ) {
-
-    const username = session?.user.username;
+const QuizWrapper = ( { lang, user, category, setCategory } ) => {
+   
+    const username = user?.username;
     const [studyState, setStudyState] = useState({word: "", words: [], answerList: []});
     
-    const { data, loading, error } = useQuery(QUERY_STUDY_ITEMS, {
+    console.log("Rendering study page.");
+
+    const [ queryStudyItems, studyItemStatus ] = useLazyQuery(QUERY_STUDY_ITEMS, {
         variables: { username: username, category: category }
+    });
+
+    const [ queryWords, wordStatus ] = useLazyQuery(QUERY_WORDS, {
+        variables: { category: category }
     });
 
     const [mutateStudyItem, mutationStatus] = useMutation(CREATE_STUDY_ITEM, {
@@ -138,38 +151,59 @@ function StudyPage( { lang, session, category, setCategory } ) {
       });
 
     useEffect(() => {
-        if(!data) return;
-        if(username) {
-            if (data.studyItems.length == 0) {
-                let ids = Object.values(data.words).map(item => parseInt(item.id));
-                mutateStudyItem({variables: {username: username, tangoId: ids, due: Date.now().toString()}});
-                wordList = data.studyItems.slice();
-            }
+        console.log("Study item data has changed!");
+        
+        // Don't try to check study items if no one is logged in
+        if(!username) return;
+
+        // If we don't have any data yet, query it
+        if(!studyItemStatus.data) {
+            console.log("Study item data is null. Querying...");
+            queryStudyItems();
+            return;
         }
         
-        let wordList; 
-        wordList = fisherYates(data.words); // TODO
-        setStudyState(getNextWord(wordList));
-    }, [data]);
+        // If there is no study data for this category, create it
+        // Otherwise, initialize the study session
+        if (studyItemStatus.data.studyItems.length == 0) {
+            queryWords();
+        } else {
+            setStudyState(getNextWord(fisherYates(studyItemStatus.data.studyItems)));
+        }
 
-    if (loading || mutationStatus.loading) return(<Loading lang={lang}/>);
+    }, [studyItemStatus.data]);
+
+    useEffect(() => {
+        console.log("Word data has changed!");
+
+        // If we don't have any data yet, query it
+        if(!wordStatus.data) {
+            console.log("Word data is null. Querying...");
+            queryWords();
+            return;
+        }
+
+        // If we're querying because the user needs to add words, run mutation
+        // Otherwise, initialize a non-logged-in study session
+        if(username) {
+            let ids = Object.values(data.words).map(item => parseInt(item.id));
+            mutateStudyItem({variables: {username: username, tangoId: ids, due: Date.now().toString()}});
+        } else {
+            setStudyState(getNextWord(fisherYates(wordStatus.data.words)));
+        }
+    }, [wordStatus.data]);
+    
+
+    if (wordStatus.loading || studyItemStatus.loading || mutationStatus.loading) return(<Loading lang={lang}/>);
         
-    if (error) {
-        return <pre>{error.message}</pre>;
+    if (wordStatus.error || studyItemStatus.error || mutationStatus.error) {
+        return <pre>Error!</pre>;
     }
 
-    if (mutationStatus.error) {
-        return <pre>{mutationStatus.error.message}</pre>;
-    }
-
-    // Shuffle currently-due words. TODO: Will need to shuffle according to time due?
-   
     if (studyState.word === '') return <Loading lang={lang}/>
     
     return(
-        <main className={styles.content + " min-h-fit"}>
-            <StudyCard lang={lang} chooseCategory={setCategory} studyState={studyState} setStudyState={setStudyState}/>
-        </main>
+        <StudyCard lang={lang} chooseCategory={setCategory} studyState={studyState} setStudyState={setStudyState}/>
     );
 }
 
@@ -177,6 +211,35 @@ const StudyCard = ( { lang, studyState, setStudyState, setCategory }) => {
 
     const [answerState, setAnswerState] = useState({ clicked: -1, result: ''});
     const [visible, setVisible] = useState(false);
+
+    const handleInput = (e) => {
+        console.log(e.code);
+        if(answerState.clicked != -1) {
+            if(e.code === 'Enter' || e.code === 'ArrowRight'){
+                toNextWordB();
+            }
+        }
+    
+        if(e.code === 'KeyD') {
+            setVisible(!visible);
+        }
+    
+        if(e.code === 'Digit1') {
+            setAnswerState({clicked: 0});
+        }
+    
+        if(e.code === 'Digit2' && studyState.answerList.length >= 2) {
+            setAnswerState({clicked: 1});
+        }
+    
+        if(e.code === 'Digit3' && studyState.answerList.length >= 3) {
+            setAnswerState({clicked: 2});
+        }
+    
+        if(e.code === 'Digit4' && studyState.answerList.length >= 4) {
+            setAnswerState({clicked: 3});
+        }
+    }
 
     // Hide info when word changes
     useEffect(() => {
@@ -208,47 +271,14 @@ const StudyCard = ( { lang, studyState, setStudyState, setCategory }) => {
         setVisible(!visible);
     }
 
-    const handleInput = (e) => {
-        console.log(e.code);
-		if(answerState.clicked != -1) {
-            if(e.code === 'Enter' || e.code === 'ArrowRight'){
-                toNextWordB();
-            }
-        }
-
-        if(e.code === 'KeyD') {
-            setVisible(!visible);
-        }
-
-        if(e.code === 'Digit1') {
-            setAnswerState({clicked: 0});
-        }
-
-        if(e.code === 'Digit2' && studyState.answerList.length >= 2) {
-            setAnswerState({clicked: 1});
-        }
-
-        if(e.code === 'Digit3' && studyState.answerList.length >= 3) {
-            setAnswerState({clicked: 2});
-        }
-
-        if(e.code === 'Digit4' && studyState.answerList.length >= 4) {
-            setAnswerState({clicked: 3});
-        }
-	}
-
     return(
-        <>
-            <section tabIndex={0} onKeyDown={handleInput} className="relative flex flex-col basis-full h-full w-full text-lg md:text-xl lg:text-2xl items-center content-center justify-center">
-                <section className="relative flex flex-col basis-full md:basis-3/4 w-full justify-between items-center shadow-md">
+            <><section tabIndex={0} onKeyDown={handleInput} className="relative flex flex-col basis-full md:basis-3/4 w-full justify-between items-center shadow-md">
                 <div className="relative flex flex-col justify-evenly w-full basis-full">
                     <div className={(visible ? '' : 'hidden') + " absolute h-full w-full bg-white/50 md:hidden"}/>
-                    <div class="flex justify-center">
+                    <div className="flex justify-center">
                     <h2 className={styles.tango + " my-2 text-7xl md:text-7xl lg:text-7xl mb-2"}>{studyState.word?.tango}</h2>
                     </div>
-                    <div>
-                        <ButtonGrid answerList={studyState.answerList} setAnswerState={setAnswerState} answerState={answerState} />
-                    </div>
+                    <ButtonGrid answerList={studyState.answerList} setAnswerState={setAnswerState} answerState={answerState}/>
                     <div className="text-center" style={{"visibility": (answerState.clicked == -1 ? "hidden" : "visible")} }>
                         <button className="kaki-button my-2" onClick={() => toNextWordB()}>{feedback} →</button>
                     </div>       
@@ -259,9 +289,7 @@ const StudyCard = ( { lang, studyState, setStudyState, setCategory }) => {
                 </div>
             </section>
             <Definition word={studyState.word} answerState={answerState} lang={lang} visible={visible} setVisible={setVisible}/>
-            </section>
-        </>
-    );
+   </> );
 }
 
 const Definition = ( { word, answerState, lang, visible, setVisible } ) => {
@@ -311,7 +339,7 @@ const ButtonGrid = ( { answerList, setAnswerState, answerState } ) => {
     }
 
     return(
-        <div className={styles.response}>
+        <div className="flex w-full justify-center">
             <div className={styles.buttonGrid}>
                 {answerList.map((option, i) =>             
                 <AnswerButton key={"button" + i} i={i} answerState={answerState} option={option} toNextWord={toNextWord}/>)}

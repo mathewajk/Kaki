@@ -7,14 +7,10 @@
 
 html,
 body {
-  width: 100%;
-  height: 100%;
+  @apply w-full h-full m-0 bg-white dark:bg-gray-800;
   
   font-family: 'M PLUS Rounded 1c';
   font-weight: bold;
-
-  @apply bg-white dark:bg-gray-800;
-  margin: 0;
 }
 
 a {
@@ -33,8 +29,7 @@ a {
 }
 
 nav {
-  @apply relative bg-white dark:bg-gray-900 dark:text-white;
-  z-index: 10;
+  @apply relative bg-white dark:bg-gray-900 dark:text-white z-10;
 }
 
 nav::after {
@@ -46,19 +41,11 @@ nav::after {
 }
 
 button {
-  @apply p-0.5 cursor-pointer rounded-sm;
-}
-
-.kaki-button {
-  padding: 0.5em;
   background-color: rgb(255, 115, 0);
-  font-weight: bold;
-  border-radius: 5px;
-  cursor: pointer;
-  @apply transition text-white shadow-md duration-150 ease-in-out
+  @apply p-2 font-bold cursor-pointer rounded-md transition text-white shadow-md duration-150 ease-in-out;
 }
 
-.kaki-button:hover {
+button:hover {
   background-color: rgb(255, 72, 0);
 }
 
@@ -68,39 +55,16 @@ button {
 }
 
 #__next {
-  width: 100%;
-  height: 100%;
+  @apply w-full h-full;
 }
 
 main {
-  
-  @apply h-full w-full m-0;
-
-  font-size: 20px;
-
-  
+  @apply h-full w-full m-0 text-lg;
   color: #0f4264;
-  
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 @media (prefers-color-scheme: dark) {
     main {
     color:  #f1f1fb;
   }
-}
-
-.menuTop {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  top: 10px;
-  left: 0;
-  font-size: 1em;
-  color: rgb(233, 141, 12);
-}
-
-.menuTop h2 {
-  margin: 0px;
 }
