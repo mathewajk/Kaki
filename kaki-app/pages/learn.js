@@ -345,7 +345,7 @@ const AnswerButton = ( { i, option, answerState, toNextWord } ) => {
     }
 
     return (
-        <button disabled={ (feedback != '' ? true : false) } className={styles[feedback]} onClick={handleClick}>
+        <button disabled={ (answerState.clicked != -1 ? true : false) } className={styles[feedback]} onClick={handleClick}>
             <Pitch word={option} />
         </button>
     );
