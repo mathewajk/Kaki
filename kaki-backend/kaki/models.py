@@ -81,9 +81,13 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
 
 class StudyItem(models.Model):
 
+    # TODO add seen/unseen for reporting
+    
     user     = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
     item     = models.ForeignKey(VocabItem, on_delete=models.CASCADE)
-    priority = models.CharField(max_length = 255, null=False, blank=False)
+    due      = models.CharField(max_length = 255, null=False, blank=False)
+    interval = models.IntegerField(default=1, blank=False, null=False)
+    easing_factor = models.FloatField(default=2.5, blank=False, null=False)
 
     def __str__(self):
-        return "{0}, {1}, {2}".format(self.user.username, self.item.tango, self.priority)
+        return "{0}, {1}, {2}".format(self.user.username, self.item.tango, self.due)

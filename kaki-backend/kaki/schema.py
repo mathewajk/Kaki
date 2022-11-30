@@ -1,4 +1,9 @@
 import graphene
+import math
+from datetime import *
+from dateutil import parser
+from dateutil.relativedelta import relativedelta
+
 from graphene_django import DjangoObjectType
 from kaki.models import VocabItem, User, UserAccount, StudyItem
 from kaki.vocab_schema import VocabType, CreateVocabItem, UpdateVocabItem, UpdateVocabItemFromWord, DeleteVocabItem
@@ -16,7 +21,7 @@ class UserAccountType(DjangoObjectType):
 class StudyItemType(DjangoObjectType):
     class Meta:
         model = StudyItem
-        fields = ('id', 'user', 'item', 'priority')
+        fields = ('id', 'user', 'item', 'due', 'interval', 'easing_factor')
 
 
 class CreateUser(graphene.Mutation):
@@ -32,7 +37,7 @@ class CreateUser(graphene.Mutation):
         return CreateUser(ok=True, user=user)
 
 
-class CreateStudyItem(graphene.Mutation):
+class CreateStudyItems(graphene.Mutation):
     class Arguments:
         username = graphene.String()
         tango_id = graphene.List(graphene.Int)
@@ -46,22 +51,62 @@ class CreateStudyItem(graphene.Mutation):
         ids = kwargs.get('tango_id')
         items = []
 
-        for id in ids:
+        for i in range(0, len(ids)):
+            id = ids[i]
+
             user = UserAccount.objects.get(username=kwargs.get('username'))
             item = VocabItem.objects.get(id=id)
             
             # Disallow duplicate study items
-            if StudyItem.objects.filter(user=user, item=item):
-                return CreateStudyItem(ok=False, item=None)
+            matches = StudyItem.objects.filter(user=user, item=item)
+            if matches:
+                continue
 
-            due = kwargs.get('due')
+            due = parser.parse(kwargs.get('due')) + relativedelta(days = + math.floor(i / 20))
 
-            study_item = StudyItem(user=user, item=item, priority=due)
+            study_item = StudyItem(user=user, item=item, due=due.isoformat())
             items.append(study_item)
             study_item.save()
 
-        return CreateStudyItem(ok=True, items=items)
+        return CreateStudyItems(ok=True, items=items)
 
+
+class UpdateStudyItem(graphene.Mutation):
+    class Arguments:
+        username = graphene.String()
+        id       = graphene.Int()
+        due      = graphene.String()
+        # interval  = graphene.Int()
+        # easing_factor = graphene.Float()
+    
+    ok = graphene.Boolean()
+    item = graphene.Field(StudyItemType)
+
+    def mutate(self, info, **kwargs):
+
+        id = kwargs.get('id')
+        due = kwargs.get('due')
+
+        interval = kwargs.get('interval')
+        easing_factor =  kwargs.get('easing_factor')
+        
+
+        user = UserAccount.objects.get(username=kwargs.get('username'))
+        item = StudyItem.objects.get(id=id)
+    
+        if item:
+            if due:
+                item.due = due
+            if interval:
+                item.interval = interval
+            if easing_factor:
+                item.easing_factor = easing_factor
+            item.save()
+            return UpdateStudyItem(ok=True, item=item)
+        
+        return UpdateStudyItem(ok=False, item=None)
+
+        
 
 class Query(graphene.ObjectType):
     
@@ -72,8 +117,10 @@ class Query(graphene.ObjectType):
     
     # Need to define matching fields for functions!
     study_items = graphene.List(StudyItemType, \
-                                username=graphene.Argument(graphene.String(), required=False), \
-                                category=graphene.Argument(graphene.String(), required=False))
+                                username= graphene.Argument(graphene.String(), required=False), \
+                                category= graphene.Argument(graphene.String(), required=False), \
+                                getDue  = graphene.Boolean())
+
     words = graphene.List(VocabType, \
                           category=graphene.Argument(graphene.String(), required=False))
 
@@ -113,19 +160,27 @@ class Query(graphene.ObjectType):
         if not user:
             return Null
         
+        userItems = StudyItem.objects.filter(user=user[0])
+
         category = kwargs.get('category')
         if not category:
-            return StudyItem.objects.filter(user=user[0])
+            if(kwargs.get('getDue')):
+                return list(filter(lambda x: parser.parse(x.due) < datetime.now(timezone.utc), userItems))
+            else:
+                return userItems
 
-        return StudyItem.objects.filter(user=user[0], item__category__contains=category)
-
-
+        if(kwargs.get('getDue')):
+            return list(filter(lambda x: parser.parse(x.due) < datetime.now(timezone.utc), userItems.filter(item__category__contains=category)))
+        else:
+            return userItems.filter(item__category__contains=category)
+        
 class Mutation(graphene.ObjectType):
     create_word = CreateVocabItem.Field()
     create_user = CreateUser.Field()
-    create_study_item = CreateStudyItem.Field()
+    create_update_study_item = CreateStudyItems.Field()
     delete_word = DeleteVocabItem.Field()
     update_word = UpdateVocabItem.Field()
+    update_study_item = UpdateStudyItem.Field()
     update_word_from_word = UpdateVocabItemFromWord.Field()
     
 

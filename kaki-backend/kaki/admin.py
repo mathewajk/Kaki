@@ -19,7 +19,7 @@ class UserAccountAdmin(admin.ModelAdmin):
     list_filter = ('is_staff', 'is_superuser', 'active')
 
 class StudyItemAdmin(admin.ModelAdmin):
-    list_display = ("user", "item", "priority")
+    list_display = ("user", "item", "due")
 
 admin.site.register(VocabItem, VocabItemAdmin)
 admin.site.register(User, UserAdmin)
