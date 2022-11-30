@@ -33,7 +33,7 @@ function Home( { lang } ) {
             </div>
           </div>
           
-          <p><button className="kaki-button"><Link href="/register">{lang==="EN" ? "Get Started" : "始める"}</Link></button></p>
+          <p><button type="button" className="kaki-button"><Link href="/register">{lang==="EN" ? "Get Started" : "始める"}</Link></button></p>
           </>
         )
       }

@@ -1,5 +1,6 @@
 import styles from '../styles/Learn.module.css'
 import Pitch from "../components/pitch";
+import CategoryPicker from '../components/categorypicker';
 
 import React, { useEffect, useState } from "react";
 import { useQuery, useLazyQuery, useMutation, gql } from "@apollo/client";
@@ -7,10 +8,11 @@ import { useSession } from "next-auth/react";
 
 
 const CREATE_STUDY_ITEM = gql`
-mutation CreateStudyItem($username: String!, $tangoId: [Int]!, $due: String!) {
-    createStudyItem(username: $username, tangoId: $tangoId, due: $due) {
+mutation CreateUpdateStudyItem($username: String!, $tangoId: [Int]!, $due: String!) {
+    createUpdateStudyItem(username: $username, tangoId: $tangoId, due: $due) {
         ok
         items {
+            id
             item {
                 tango
                 yomi
@@ -18,14 +20,24 @@ mutation CreateStudyItem($username: String!, $tangoId: [Int]!, $due: String!) {
                 definition
                 pos
             }
-            priority
+            due
+            interval
+            easingFactor
         }
     }
 }`
 
+const UPDATE_STUDY_ITEM = gql`
+mutation UpdateStudyItem($username: String!, $id: Int!, $due: String!) {
+    updateStudyItem(username: $username, id: $id, due: $due) {
+        ok
+    }
+}`
+
 const QUERY_STUDY_ITEMS = gql`
-query StudyItems($username: String, $category: String) {
-    studyItems(username: $username, category: $category) {
+query StudyItems($username: String, $category: String, $getDue: Boolean) {
+    studyItems(username: $username, category: $category, getDue: $getDue) {
+        id
         item {
             tango
             yomi
@@ -33,7 +45,9 @@ query StudyItems($username: String, $category: String) {
             definition
             pos
         }
-        priority
+        due
+        interval
+        easingFactor
     }
 }`
 
@@ -50,47 +64,6 @@ query Words($category: String) {
 }`
 
 /* Things to look into: Children, context, redux? */
-
-const ChooseCategory = ( { lang, setCategory, displayStyle } ) => {
-    
-    const categories = ["n5", "n4", "n3", "n2", "n1"];
-    const text = {
-        'EN': 'Choose a level:',
-        'JA': '挑戦するレベルを選択してください。'
-    }
-
-    return (
-        <>
-            {   // Display prompt when in "full" mode 
-                displayStyle === "full" && (<p className="mb-8 text-2xl">{text[lang]}</p>)
-            }
-
-            <div className={styles.categoryGrid} data-display={displayStyle}>
-                {
-                    categories.map((category, i) => {
-                        
-                        const handleClick = (e) => {
-                            e.preventDefault();
-                            setCategory(category);
-                        }
-                        
-                        const color = `rgb(${0 + 60 * i}, ${160 - 20 * i}, ${180 - 40 * i})`;
-                        const id = `cat-button-${i}`
-                        return (
-                            <button 
-                                key={id} 
-                                tag={id} 
-                                style={{'backgroundColor': color}} 
-                                onClick={handleClick}>
-                                {category.toUpperCase()}
-                            </button>
-                        )
-                    })
-                }
-            </div>
-        </>
-    );
-}
 
 const Loading = ( { lang } ) => {
 
@@ -110,43 +83,47 @@ const Loading = ( { lang } ) => {
 
 function Learn( { lang } ) {
 
-    
     const { data: session, status } = useSession();
-    const [category, setCategory] = useState('');
-
-    console.log("Rendering top-level (session) component.");
+    const [ category, setCategory ] = useState('');
 
     return(
         <section className={styles.learn}>
             {status === "loading" && (<Loading lang={lang}/>)}
             {category !== '' && (<QuizWrapper lang={lang} user={session?.user} category={category} setCategory={setCategory}/>)}
-            {category === '' && (<ChooseCategory lang={lang} displayStyle={"full"} setCategory={setCategory}/>)}
+            {category === '' && (<CategoryPicker lang={lang} displayStyle={"full"} setCategory={setCategory}/>)}
         </section>
     );
 }
 
 const QuizWrapper = ( { lang, user, category, setCategory } ) => {
    
-    const username = user?.username;
-    const [studyState, setStudyState] = useState({word: "", words: [], answerList: []});
+    const [ studyState, setStudyState ] = useState({
+        username: user?.username, 
+        word: null,
+        due: null,
+        interval: null,
+        easing_factor: null,
+        words: [], 
+        answerList: []
+    });
     
     console.log("Rendering study page.");
 
     const [ queryStudyItems, studyItemStatus ] = useLazyQuery(QUERY_STUDY_ITEMS, {
-        variables: { username: username, category: category }
+        variables: { username: studyState.username, category: category, getDue: true }
     });
 
     const [ queryWords, wordStatus ] = useLazyQuery(QUERY_WORDS, {
         variables: { category: category }
     });
 
-    const [mutateStudyItem, mutationStatus] = useMutation(CREATE_STUDY_ITEM, {
+    const [ createStudyItems, mutationStatus ] = useMutation(CREATE_STUDY_ITEM, {
         refetchQueries: [ 
             {
                 query: QUERY_STUDY_ITEMS, 
-                variables: { username: username, category: category }
+                variables: { username: studyState.username, category: category, getDue: true }
             },
-            'StudyItemsAndWords'
+            'StudyItems'
         ]
       });
 
@@ -154,7 +131,11 @@ const QuizWrapper = ( { lang, user, category, setCategory } ) => {
         console.log("Study item data has changed!");
         
         // Don't try to check study items if no one is logged in
-        if(!username) return;
+        if(!studyState.username) {
+            console.log("Querying words...");
+            queryWords();
+            return;
+        }
     
         // Avoid multiple queries?
         if(studyItemStatus.loading) return;
@@ -166,14 +147,17 @@ const QuizWrapper = ( { lang, user, category, setCategory } ) => {
             return;
         }
         
+        console.log("Got study items: ");
         console.log(studyItemStatus.data.studyItems);
         
         // If there is no study data for this category, create it
         // Otherwise, initialize the study session
         if (studyItemStatus.data.studyItems.length == 0) {
+            console.log("Study items are length 0!");
             queryWords();
         } else {
             let state = getNextWord(fisherYates(studyItemStatus.data.studyItems));
+            state.username = studyState.username;
             console.log(state);
             setStudyState(state);
         }
@@ -181,13 +165,16 @@ const QuizWrapper = ( { lang, user, category, setCategory } ) => {
     }, [studyItemStatus.data]);
 
     useEffect(() => {
+
         console.log("Word data has changed!");
 
-        // Avoid multiple queries?
+        // Avoid unnecessary queries
         if(wordStatus.loading) return;
+        if(studyState.username && (studyItemStatus.loading || studyItemStatus.data == undefined )) return; 
+        if(studyState.username && studyItemStatus.data.studyItems.length > 0) return;
 
         // If we don't have any data yet, query it
-        if(!wordStatus.data) {
+        if(! wordStatus.data) {
             console.log("Word data is null. Querying...");
             queryWords();
             return;
@@ -195,11 +182,14 @@ const QuizWrapper = ( { lang, user, category, setCategory } ) => {
 
         // If we're querying because the user needs to add words, run mutation
         // Otherwise, initialize a non-logged-in study session
-        if(username) {
+        if(studyState.username) {
+            console.log("Creating study items.");
             let ids = Object.values(wordStatus.data.words).map(item => parseInt(item.id));
-            //mutateStudyItem({variables: {username: username, tangoId: ids, due: Date.now().toString()}});
+            console.log({variables: {username: studyState.username, tangoId: ids, due: new Date(Date.now()).toISOString()}});
+            createStudyItems({variables: {username: studyState.username, tangoId: ids, due: new Date(Date.now()).toISOString()}});
         } else {
             let state = getNextWord(fisherYates(wordStatus.data.words));
+            state.username = studyState.username;
             console.log(state);
             setStudyState(state);
         }
@@ -209,11 +199,11 @@ const QuizWrapper = ( { lang, user, category, setCategory } ) => {
     if (wordStatus.loading || studyItemStatus.loading || mutationStatus.loading) return(<Loading lang={lang}/>);
         
     if (wordStatus.error || studyItemStatus.error || mutationStatus.error) {
-        return <pre>{wordStatus?.error}{studyItemStatus?.error}{mutationStatus?.error}</pre>;
+        return <pre>{wordStatus?.error?.message}{studyItemStatus?.error?.message}{mutationStatus?.error?.message}</pre>;
     }
 
     if (studyState.word === '') return <Loading lang={lang}/>
-    
+
     return(
         <StudyCard lang={lang} chooseCategory={setCategory} studyState={studyState} setStudyState={setStudyState}/>
     );
@@ -223,6 +213,8 @@ const StudyCard = ( { lang, studyState, setStudyState, setCategory }) => {
 
     const [answerState, setAnswerState] = useState({ clicked: -1, result: ''});
     const [visible, setVisible] = useState(false);
+
+    console.log("Rendering study card...");
 
     const handleInput = (e) => {
         
@@ -266,11 +258,13 @@ const StudyCard = ( { lang, studyState, setStudyState, setCategory }) => {
     }
 
     const toNextWord = () => {
-        setStudyState(getNextWord(studyState.words));
+        let state = getNextWord(studyState.words);
+        state.username = studyState.username;
+        setStudyState(state);
         setAnswerState({ clicked: -1, result: ''});
     }
 
-    if(studyState.word == null && studyState.words == null) {
+    if(studyState.word == null) {
         return(
             <section className="w-3/4 text-center">
                 <div className="text-2xl">
@@ -292,14 +286,14 @@ const StudyCard = ( { lang, studyState, setStudyState, setCategory }) => {
                     <div className="flex justify-center">
                     <h2 className={styles.tango + " my-2 text-7xl md:text-7xl lg:text-7xl mb-2"}>{studyState.word?.tango}</h2>
                     </div>
-                    <ButtonGrid answerList={studyState.answerList} setAnswerState={setAnswerState} answerState={answerState}/>
+                    <ButtonGrid answerList={studyState.answerList} setAnswerState={setAnswerState} answerState={answerState} studyState={studyState}/>
                     <div className="text-center" style={{"visibility": (answerState.clicked == -1 ? "hidden" : "visible")} }>
                         <button type="button" className="my-2" onClick={() => toNextWord()}>{feedback} →</button>
                     </div>       
                 </div>
                 <div className="flex w-full justify-between md:justify-end items-end pb-2">
                         <button onClick={handleClick} className="text-white text-sm block md:hidden rounded-md bg-gray-400 p-3 ml-4">{visible ? "Hide info" : "Show info"}</button>
-                        <ChooseCategory setCategory={setCategory} displayStyle={"menu"}/>
+                        <CategoryPicker setCategory={setCategory} displayStyle={"menu"}/>
                 </div>
             </section>
             <Definition word={studyState.word} answerState={answerState} lang={lang} visible={visible} setVisible={setVisible}/>
@@ -344,12 +338,36 @@ const Definition = ( { word, answerState, lang, visible, setVisible } ) => {
     );
 }
 
-const ButtonGrid = ( { answerList, setAnswerState, answerState } ) => {
+const ButtonGrid = ( { answerList, setAnswerState, answerState, studyState, setStudyState } ) => {
 
     
+    const [ mutateStudyItem, mutationStatus ] = useMutation(UPDATE_STUDY_ITEM);
 
     const toNextWord = ( result, i ) => {
+        
         setAnswerState({ clicked: i, result: result });
+       
+        if(studyState.username) {
+            
+            let interval = parseInt(studyState.interval) * parseInt(studyState.easing_factor);
+            let due = new Date(Date.now() + 86400000 * parseInt(studyState.interval)).toISOString();
+            if(result == "incorrect") {
+                interval = 1;
+                due = new Date(Date.now()).toISOString();
+            }
+
+            mutateStudyItem({
+                variables: {
+                    username: studyState.username, 
+                    id: parseInt(studyState.id), 
+                    due: due,
+                    interval: interval
+                }
+            });
+
+            //TODO append to end of study queue!
+            //studyState.words.push(studyState)
+        }
     }
 
     return(
@@ -401,8 +419,23 @@ function getNextWord(words) {
     if(!word) return { word: null, words: null, answerList: null};
 
     if(word.__typename === "StudyItemType")
-        return { word: word.item, words: words, answerList: generateAnswers(word.item)};
-    return { word: word, words: words, answerList: generateAnswers(word)};
+        return { 
+            word: word.item, 
+            id: word.id, 
+            due: word.due, 
+            interval: word.interval, 
+            easing_factor: word.easingFactor, 
+            words: words, answerList: generateAnswers(word.item)
+        };
+
+    return { 
+        word: word, 
+        due: null, 
+        interval: null, 
+        easing_factor: null, 
+        words: words,
+        answerList: generateAnswers(word)
+    };
 }
 
 function getRandomWord(words) {
