@@ -166,12 +166,12 @@ const QuizWrapper = ( { lang, user, category, setCategory } ) => {
     );
 }
 
-const handleStudyItems = ( studyState, setStudyState, queries ) => {
+const handleStudyItems = ( quizState, setQuizState, queries ) => {
     
     console.log("Handling study items...");
         
     // Don't try to check study items if no one is logged in
-    if(!studyState.username) {
+    if(!quizState.username) {
         console.log("No user. Querying words...");
         queries.words.query();
         return;
@@ -199,18 +199,18 @@ const handleStudyItems = ( studyState, setStudyState, queries ) => {
     }
 
     let state = getNextWord(fisherYates(items));
-    state.username = studyState.username;
-    setStudyState(state);
+    state.username = quizState.username;
+    setQuizState(state);
 }
 
-const handleWords = (studyState, setStudyState, queries, mutations ) => {
+const handleWords = (quizState, setQuizState, queries, mutations ) => {
     
     console.log("Handling words...");
 
     // Avoid unnecessary queries
     if(queries.words.loading) return;
-    if(studyState.username && (queries.items.loading || queries.items.data == undefined )) return; 
-    if(studyState.username && queries.items.data.studyItems.length > 0) return;
+    if(quizState.username && (queries.items.loading || queries.items.data == undefined )) return; 
+    if(quizState.username && queries.items.data.studyItems.length > 0) return;
 
     // If we don't have any data yet, query it
     if(!queries.words.data) {
@@ -221,23 +221,23 @@ const handleWords = (studyState, setStudyState, queries, mutations ) => {
 
     // If we're querying because the user needs to add words, run mutation
     // Otherwise, initialize a non-logged-in study session
-    if(studyState.username) {
+    if(quizState.username) {
         console.log("Creating study items.");
         let ids = Object.values(wordStatus.data.words).map(item => parseInt(item.id));
-        console.log({variables: {username: studyState.username, tangoId: ids, due: new Date(Date.now()).toISOString()}});
-        mutations.create.mutation({variables: {username: studyState.username, tangoId: ids, due: new Date(Date.now()).toISOString()}});
+        console.log({variables: {username: quizState.username, tangoId: ids, due: new Date(Date.now()).toISOString()}});
+        mutations.create.mutation({variables: {username: quizState.username, tangoId: ids, due: new Date(Date.now()).toISOString()}});
     } else {
         let state = getNextWord(fisherYates(queries.words.data.words));
-        state.username = studyState.username;
+        state.username = quizState.username;
         console.log(state);
-        setStudyState(state);
+        setQuizState(state);
     }
 }
 const StudyCard = ( { lang, user, setCategory, queries, mutations }) => {
 
     const [ answerState, setAnswerState ] = useState( { clicked: -1, result: '' } );
     const [ visible,     setVisible ]     = useState( false );
-    const [ studyState,  setStudyState ]  = useState( {
+    const [ quizState,  setQuizState ]  = useState( {
         username: user?.username, 
         word: null,
         words: [], 
@@ -245,17 +245,17 @@ const StudyCard = ( { lang, user, setCategory, queries, mutations }) => {
     });
     
     useEffect(() => {
-        handleStudyItems(studyState, setStudyState, queries)
+        handleStudyItems(quizState, setQuizState, queries)
     }, [queries.items.status]);
 
     useEffect(() => {
-        handleWords(studyState, setStudyState, queries, mutations);
+        handleWords(quizState, setQuizState, queries, mutations);
     }, [queries.words.status]);
 
     // Hide info when word changes
     useEffect(() => {
         setVisible(false)
-    }, [studyState.word]);
+    }, [quizState.word]);
 
     console.log("Rendering study card...");
 
@@ -277,15 +277,15 @@ const StudyCard = ( { lang, user, setCategory, queries, mutations }) => {
             setAnswerState({clicked: 0});
         }
     
-        if(e.code === 'Digit2' && studyState.answerList.length >= 2) {
+        if(e.code === 'Digit2' && quizState.answerList.length >= 2) {
             setAnswerState({clicked: 1});
         }
     
-        if(e.code === 'Digit3' && studyState.answerList.length >= 3) {
+        if(e.code === 'Digit3' && quizState.answerList.length >= 3) {
             setAnswerState({clicked: 2});
         }
     
-        if(e.code === 'Digit4' && studyState.answerList.length >= 4) {
+        if(e.code === 'Digit4' && quizState.answerList.length >= 4) {
             setAnswerState({clicked: 3});
         }
     }
@@ -298,17 +298,17 @@ const StudyCard = ( { lang, user, setCategory, queries, mutations }) => {
     }
 
     const toNextWord = () => {
-        let words = studyState.words;
+        let words = quizState.words;
         if(answerState.result === 'incorrect') {
-            words.unshift(studyState.word);
+            words.unshift(quizState.word);
         }
         let state = getNextWord(words);
-        state.username = studyState.username;
-        setStudyState(state);
+        state.username = quizState.username;
+        setQuizState(state);
         setAnswerState({ clicked: -1, result: ''});
     }
 
-    if(studyState.word == null) {
+    if(quizState.word == null) {
         return(
             <section className="w-3/4 text-center">
                 <div className="text-2xl">
@@ -328,9 +328,9 @@ const StudyCard = ( { lang, user, setCategory, queries, mutations }) => {
                 <div className="relative flex flex-col justify-evenly w-full basis-full">
                     <div className={(visible ? '' : 'hidden') + " absolute h-full w-full bg-white/50 md:hidden"}/>
                     <div className="flex justify-center">
-                    <h2 className={styles.tango + " my-2 text-7xl md:text-7xl lg:text-7xl mb-2"}>{studyState.word.item.tango}</h2>
+                    <h2 className={styles.tango + " my-2 text-7xl md:text-7xl lg:text-7xl mb-2"}>{quizState.word.item.tango}</h2>
                     </div>
-                    <ButtonGrid answerList={studyState.answerList} setAnswerState={setAnswerState} answerState={answerState} studyState={studyState}/>
+                    <ButtonGrid answerList={quizState.answerList} setAnswerState={setAnswerState} answerState={answerState} quizState={quizState}/>
                     <div className="text-center" style={{"visibility": (answerState.clicked == -1 ? "hidden" : "visible")} }>
                         <button type="button" className="my-2" onClick={() => toNextWord()}>{feedback} →</button>
                     </div>       
@@ -340,7 +340,7 @@ const StudyCard = ( { lang, user, setCategory, queries, mutations }) => {
                         <CategoryPicker setCategory={setCategory} displayStyle={"menu"}/>
                 </div>
             </section>
-            <Definition word={studyState.word} answerState={answerState} lang={lang} visible={visible} setVisible={setVisible}/>
+            <Definition word={quizState.word} answerState={answerState} lang={lang} visible={visible} setVisible={setVisible}/>
    </> );
 }
 
@@ -382,7 +382,7 @@ const Definition = ( { word, answerState, lang, visible, setVisible } ) => {
     );
 }
 
-const ButtonGrid = ( { answerList, setAnswerState, answerState, studyState, setStudyState } ) => {
+const ButtonGrid = ( { answerList, setAnswerState, answerState, quizState, setQuizState } ) => {
 
     
     const [ mutateStudyItem, mutationStatus ] = useMutation(UPDATE_STUDY_ITEM);
@@ -391,10 +391,10 @@ const ButtonGrid = ( { answerList, setAnswerState, answerState, studyState, setS
         
         setAnswerState({ clicked: i, result: result });
        
-        if(studyState.username) {
+        if(quizState.username) {
                  
-            let due = new Date(Date.now() + 86400000 * parseInt(studyState.word.interval)).toISOString();
-            let interval = parseInt(studyState.word.interval) * parseInt(studyState.word.easingFactor);
+            let due = new Date(Date.now() + 86400000 * parseInt(quizState.word.interval)).toISOString();
+            let interval = parseInt(quizState.word.interval) * parseInt(quizState.word.easingFactor);
             
             if(result == "incorrect") {
                 interval = 1;
@@ -403,16 +403,16 @@ const ButtonGrid = ( { answerList, setAnswerState, answerState, studyState, setS
 
             console.log({
                 variables: {
-                username: studyState.username, 
-                id: parseInt(studyState.word.id), 
+                username: quizState.username, 
+                id: parseInt(quizState.word.id), 
                 due: due,
                 interval: interval
             }});
 
             // mutateStudyItem({
             //     variables: {
-            //         username: studyState.username, 
-            //         id: parseInt(studyState.word.id), 
+            //         username: quizState.username, 
+            //         id: parseInt(quizState.word.id), 
             //         due: due,
             //         interval: interval
             //     }
