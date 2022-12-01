@@ -99,19 +99,22 @@ const QuizWrapper = ( { lang, user, category, setCategory } ) => {
     
     console.log("Setting up queries.");
 
-    const [ queryStudyItems, studyItemStatus ] = useLazyQuery(QUERY_STUDY_ITEMS, {
-        variables: { username: user?.username, category: category, getDue: true }
-    });
+    const username = user?.username;
 
-    const [ queryWords, wordStatus ] = useLazyQuery(QUERY_WORDS, {
-        variables: { category: category }
-    });
+    // Query a user's study items
+    const studyQueryVars = { variables: { username: username, category: category, getDue: true } }
+    const [ queryStudyItems, studyItemStatus ] = useLazyQuery(QUERY_STUDY_ITEMS, studyQueryVars);
 
+    // Query all words in the current category
+    const wordQueryVars = { variables: { category: category } }
+    const [ queryWords, wordStatus ] = useLazyQuery(QUERY_WORDS, wordQueryVars);
+
+    // Add study items for a user
     const [ createStudyItems, mutationStatus ] = useMutation(CREATE_STUDY_ITEM, {
         refetchQueries: [ 
             {
                 query: QUERY_STUDY_ITEMS, 
-                variables: { username: user?.username, category: category, getDue: true }
+                variables: studyQueryVars.variables
             },
             'StudyItems'
         ]
@@ -136,12 +139,78 @@ const QuizWrapper = ( { lang, user, category, setCategory } ) => {
     );
 }
 
-const StudyCard = ( { lang, user, setCategory, queryStudyItems, queryWords, studyItemStatus, wordStatus }) => {
-
-    const [answerState, setAnswerState] = useState({ clicked: -1, result: ''});
-    const [visible, setVisible] = useState(false);
+const handleStudyItems = ( studyState, setStudyState, studyItemStatus, queryStudyItems, queryWords ) => {
     
-    const [ studyState, setStudyState ] = useState({
+    console.log("Handling study items...");
+        
+    // Don't try to check study items if no one is logged in
+    if(!studyState.username) {
+        console.log("No user. Querying words...");
+        queryWords();
+        return;
+    }
+
+    // Avoid multiple queries?
+    if(studyItemStatus.loading) return;
+
+    // If we don't have any data yet, query it
+    if(!studyItemStatus.data) {
+        console.log("Study item data is null. Querying...");
+        queryStudyItems();
+        return;
+    }
+    
+    const queueLength = studyItemStatus.data.studyItems.length;
+    console.log(`Got ${queueLength} study items!`);
+    
+    // If there is no study data for this category, create it
+    // Otherwise, initialize the study session
+    if (queueLength == 0) {
+        console.log("Getting words from category...");
+        queryWords();
+        return;
+    }
+
+    let state = getNextWord(fisherYates(studyItemStatus.data.studyItems));
+    state.username = studyState.username;
+    setStudyState(state);
+}
+
+const handleWords = (studyState, setStudyState, studyItemStatus, wordStatus, queryWords ) => {
+    
+    console.log("Handling words...");
+
+    // Avoid unnecessary queries
+    if(wordStatus.loading) return;
+    if(studyState.username && (studyItemStatus.loading || studyItemStatus.data == undefined )) return; 
+    if(studyState.username && studyItemStatus.data.studyItems.length > 0) return;
+
+    // If we don't have any data yet, query it
+    if(! wordStatus.data) {
+        console.log("Word data is null. Querying...");
+        queryWords();
+        return;
+    }
+
+    // If we're querying because the user needs to add words, run mutation
+    // Otherwise, initialize a non-logged-in study session
+    if(studyState.username) {
+        console.log("Creating study items.");
+        let ids = Object.values(wordStatus.data.words).map(item => parseInt(item.id));
+        console.log({variables: {username: studyState.username, tangoId: ids, due: new Date(Date.now()).toISOString()}});
+        createStudyItems({variables: {username: studyState.username, tangoId: ids, due: new Date(Date.now()).toISOString()}});
+    } else {
+        let state = getNextWord(fisherYates(wordStatus.data.words));
+        state.username = studyState.username;
+        console.log(state);
+        setStudyState(state);
+    }
+}
+const StudyCard = ( { lang, user, setCategory, createStudyItems, queryStudyItems, queryWords, studyItemStatus, wordStatus, mutationStatus}) => {
+
+    const [ answerState, setAnswerState ] = useState( { clicked: -1, result: '' } );
+    const [ visible,     setVisible ]     = useState( false );
+    const [ studyState,  setStudyState ]  = useState( {
         username: user?.username, 
         word: null,
         words: [], 
@@ -149,72 +218,17 @@ const StudyCard = ( { lang, user, setCategory, queryStudyItems, queryWords, stud
     });
     
     useEffect(() => {
-        console.log("Study item data has changed!");
-        
-        // Don't try to check study items if no one is logged in
-        if(!studyState.username) {
-            console.log("Querying words...");
-            queryWords();
-            return;
-        }
-    
-        // Avoid multiple queries?
-        if(studyItemStatus.loading) return;
-
-        // If we don't have any data yet, query it
-        if(!studyItemStatus.data) {
-            console.log("Study item data is null. Querying...");
-            queryStudyItems();
-            return;
-        }
-        
-        console.log("Got study items: ");
-        console.log(studyItemStatus.data.studyItems);
-        
-        // If there is no study data for this category, create it
-        // Otherwise, initialize the study session
-        if (studyItemStatus.data.studyItems.length == 0) {
-            console.log("Study items are length 0!");
-            queryWords();
-        } else {
-            let state = getNextWord(fisherYates(studyItemStatus.data.studyItems));
-            state.username = studyState.username;
-            console.log(state);
-            setStudyState(state);
-        }
-
-    }, [studyItemStatus.data]);
+        handleStudyItems(studyState, setStudyState, studyItemStatus, queryStudyItems, queryWords)
+    }, [studyItemStatus]);
 
     useEffect(() => {
+        handleWords(studyState, setStudyState, studyItemStatus, wordStatus, queryWords);
+    }, [wordStatus]);
 
-        console.log("Word data has changed!");
-
-        // Avoid unnecessary queries
-        if(wordStatus.loading) return;
-        if(studyState.username && (studyItemStatus.loading || studyItemStatus.data == undefined )) return; 
-        if(studyState.username && studyItemStatus.data.studyItems.length > 0) return;
-
-        // If we don't have any data yet, query it
-        if(! wordStatus.data) {
-            console.log("Word data is null. Querying...");
-            queryWords();
-            return;
-        }
-
-        // If we're querying because the user needs to add words, run mutation
-        // Otherwise, initialize a non-logged-in study session
-        if(studyState.username) {
-            console.log("Creating study items.");
-            let ids = Object.values(wordStatus.data.words).map(item => parseInt(item.id));
-            console.log({variables: {username: studyState.username, tangoId: ids, due: new Date(Date.now()).toISOString()}});
-            createStudyItems({variables: {username: studyState.username, tangoId: ids, due: new Date(Date.now()).toISOString()}});
-        } else {
-            let state = getNextWord(fisherYates(wordStatus.data.words));
-            state.username = studyState.username;
-            console.log(state);
-            setStudyState(state);
-        }
-    }, [wordStatus.data]);
+    // Hide info when word changes
+    useEffect(() => {
+        setVisible(false)
+    }, [studyState.word]);
 
     console.log("Rendering study card...");
 
@@ -249,10 +263,7 @@ const StudyCard = ( { lang, user, setCategory, queryStudyItems, queryWords, stud
         }
     }
 
-    // Hide info when word changes
-    useEffect(() => {
-        setVisible(false)
-    }, [studyState.word]);
+
     
     let feedback = (lang === "EN" ? "Correct!" : "正解！");
     if(answerState.result === "incorrect") {
