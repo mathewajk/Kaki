@@ -2,8 +2,7 @@ import styles from '../styles/Pitch.module.css'
 
 import React from "react";
 
-// TODO: Currently duplicated in learn.js
-const getMorae = (word) => {
+export const getMorae = (word) => {
     
   let chars = word.split('');
   let morae = [];
@@ -21,7 +20,7 @@ const getMorae = (word) => {
   return morae;
 }
 
-const Pitch = (props) => {
+export const Pitch = (props) => {
 
     let word = props.word;
 
@@ -56,5 +55,3 @@ const Pitch = (props) => {
       <span className={styles["sr-only"]}> - Pitch accent: {word.pitch}</span></div>
     );
   }
-
-export default Pitch;
