@@ -96,21 +96,11 @@ function Learn( { lang } ) {
 }
 
 const QuizWrapper = ( { lang, user, category, setCategory } ) => {
-   
-    const [ studyState, setStudyState ] = useState({
-        username: user?.username, 
-        word: null,
-        due: null,
-        interval: null,
-        easing_factor: null,
-        words: [], 
-        answerList: []
-    });
     
-    console.log("Rendering study page.");
+    console.log("Setting up queries.");
 
     const [ queryStudyItems, studyItemStatus ] = useLazyQuery(QUERY_STUDY_ITEMS, {
-        variables: { username: studyState.username, category: category, getDue: true }
+        variables: { username: user?.username, category: category, getDue: true }
     });
 
     const [ queryWords, wordStatus ] = useLazyQuery(QUERY_WORDS, {
@@ -121,12 +111,43 @@ const QuizWrapper = ( { lang, user, category, setCategory } ) => {
         refetchQueries: [ 
             {
                 query: QUERY_STUDY_ITEMS, 
-                variables: { username: studyState.username, category: category, getDue: true }
+                variables: { username: user?.username, category: category, getDue: true }
             },
             'StudyItems'
         ]
-      });
+      });   
 
+    if (wordStatus.loading || studyItemStatus.loading || mutationStatus.loading) {
+        return(<Loading lang={lang}/>);
+    }
+        
+    if (wordStatus.error || studyItemStatus.error || mutationStatus.error) {
+        return(
+            <pre>
+                {wordStatus?.error?.message}
+                {studyItemStatus?.error?.message}
+                {mutationStatus?.error?.message}
+            </pre>
+        );
+    }
+
+    return(
+        <StudyCard lang={lang} user={user} setCategory={setCategory} createStudyItems={createStudyItems} queryStudyItems={queryStudyItems} queryWords={queryWords} studyItemStatus={studyItemStatus} wordStatus={wordStatus} mutationStatus={mutationStatus}/>
+    );
+}
+
+const StudyCard = ( { lang, user, setCategory, queryStudyItems, queryWords, studyItemStatus, wordStatus }) => {
+
+    const [answerState, setAnswerState] = useState({ clicked: -1, result: ''});
+    const [visible, setVisible] = useState(false);
+    
+    const [ studyState, setStudyState ] = useState({
+        username: user?.username, 
+        word: null,
+        words: [], 
+        answerList: []
+    });
+    
     useEffect(() => {
         console.log("Study item data has changed!");
         
@@ -194,25 +215,6 @@ const QuizWrapper = ( { lang, user, category, setCategory } ) => {
             setStudyState(state);
         }
     }, [wordStatus.data]);
-    
-
-    if (wordStatus.loading || studyItemStatus.loading || mutationStatus.loading) return(<Loading lang={lang}/>);
-        
-    if (wordStatus.error || studyItemStatus.error || mutationStatus.error) {
-        return <pre>{wordStatus?.error?.message}{studyItemStatus?.error?.message}{mutationStatus?.error?.message}</pre>;
-    }
-
-    if (studyState.word === '') return <Loading lang={lang}/>
-
-    return(
-        <StudyCard lang={lang} chooseCategory={setCategory} studyState={studyState} setStudyState={setStudyState}/>
-    );
-}
-
-const StudyCard = ( { lang, studyState, setStudyState, setCategory }) => {
-
-    const [answerState, setAnswerState] = useState({ clicked: -1, result: ''});
-    const [visible, setVisible] = useState(false);
 
     console.log("Rendering study card...");
 
@@ -258,7 +260,11 @@ const StudyCard = ( { lang, studyState, setStudyState, setCategory }) => {
     }
 
     const toNextWord = () => {
-        let state = getNextWord(studyState.words);
+        let words = studyState.words;
+        if(answerState.result === 'incorrect') {
+            words.unshift(studyState.word);
+        }
+        let state = getNextWord(words);
         state.username = studyState.username;
         setStudyState(state);
         setAnswerState({ clicked: -1, result: ''});
@@ -284,7 +290,7 @@ const StudyCard = ( { lang, studyState, setStudyState, setCategory }) => {
                 <div className="relative flex flex-col justify-evenly w-full basis-full">
                     <div className={(visible ? '' : 'hidden') + " absolute h-full w-full bg-white/50 md:hidden"}/>
                     <div className="flex justify-center">
-                    <h2 className={styles.tango + " my-2 text-7xl md:text-7xl lg:text-7xl mb-2"}>{studyState.word?.tango}</h2>
+                    <h2 className={styles.tango + " my-2 text-7xl md:text-7xl lg:text-7xl mb-2"}>{studyState.word.item.tango}</h2>
                     </div>
                     <ButtonGrid answerList={studyState.answerList} setAnswerState={setAnswerState} answerState={answerState} studyState={studyState}/>
                     <div className="text-center" style={{"visibility": (answerState.clicked == -1 ? "hidden" : "visible")} }>
@@ -348,25 +354,31 @@ const ButtonGrid = ( { answerList, setAnswerState, answerState, studyState, setS
         setAnswerState({ clicked: i, result: result });
        
         if(studyState.username) {
+                 
+            let due = new Date(Date.now() + 86400000 * parseInt(studyState.word.interval)).toISOString();
+            let interval = parseInt(studyState.word.interval) * parseInt(studyState.word.easingFactor);
             
-            let interval = parseInt(studyState.interval) * parseInt(studyState.easing_factor);
-            let due = new Date(Date.now() + 86400000 * parseInt(studyState.interval)).toISOString();
             if(result == "incorrect") {
                 interval = 1;
                 due = new Date(Date.now()).toISOString();
             }
 
-            mutateStudyItem({
+            console.log({
                 variables: {
-                    username: studyState.username, 
-                    id: parseInt(studyState.id), 
-                    due: due,
-                    interval: interval
-                }
-            });
+                username: studyState.username, 
+                id: parseInt(studyState.word.id), 
+                due: due,
+                interval: interval
+            }});
 
-            //TODO append to end of study queue!
-            //studyState.words.push(studyState)
+            // mutateStudyItem({
+            //     variables: {
+            //         username: studyState.username, 
+            //         id: parseInt(studyState.word.id), 
+            //         due: due,
+            //         interval: interval
+            //     }
+            // });
         }
     }
 
@@ -418,21 +430,17 @@ function getNextWord(words) {
     
     if(!word) return { word: null, words: null, answerList: null};
 
-    if(word.__typename === "StudyItemType")
+    if(word.__typename === "StudyItemType") {
         return { 
-            word: word.item, 
-            id: word.id, 
-            due: word.due, 
-            interval: word.interval, 
-            easing_factor: word.easingFactor, 
-            words: words, answerList: generateAnswers(word.item)
+            word: word,
+            words: words, 
+            answerList: generateAnswers(word.item)
         };
-
+    }
     return { 
-        word: word, 
-        due: null, 
-        interval: null, 
-        easing_factor: null, 
+        word: {
+            item: word
+        },
         words: words,
         answerList: generateAnswers(word)
     };
@@ -446,7 +454,8 @@ function generateAnswers(word) {
    
     if(!word) return [];
 
-    let morae = getMorae(word.yomi);
+    const morae = getMorae(word.yomi);
+    
     let answers = [];
     let correctAnswer = {};
 
