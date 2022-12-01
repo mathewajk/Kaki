@@ -83,9 +83,12 @@ class StudyItem(models.Model):
 
     # TODO add seen/unseen for reporting
     
-    user     = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
-    item     = models.ForeignKey(VocabItem, on_delete=models.CASCADE)
-    due      = models.CharField(max_length = 255, null=False, blank=False)
+    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
+    item = models.ForeignKey(VocabItem, on_delete=models.CASCADE)
+    
+    due  = models.CharField(max_length = 255, null=False, blank=False)
+    seen = models.BooleanField(default=False, null=False, blank=True)
+
     interval = models.IntegerField(default=1, blank=False, null=False)
     easing_factor = models.FloatField(default=2.5, blank=False, null=False)
 
