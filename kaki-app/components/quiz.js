@@ -15,8 +15,6 @@ mutation UpdateStudyItem($username: String!, $id: Int!, $due: String!) {
 }`
 
 const Quiz = ( { lang, user, setCategory, queries, mutations }) => {
-
-    console.log("Rendering Quiz...");
     
     const [ answerState, setAnswerState ] = useState( { clicked: -1, result: '' } );
     const [ visible,     setVisible ]     = useState( false );
@@ -27,24 +25,23 @@ const Quiz = ( { lang, user, setCategory, queries, mutations }) => {
         answerList: []
     });
     
+    // Keep track of changes in our study items query and words query
+    // If these change, handle any changes to the available words
     useEffect(() => {
-        console.log("Study items changed!");
         handleStudyItems(quizState, setQuizState, queries)
     }, [queries]);
 
     useEffect(() => {
-        console.log("Words changed!");
         handleWords(quizState, setQuizState, queries, mutations);
     }, [queries]);
 
-    // Hide info when word changes
+    // Hide info when the current word advanced
     useEffect(() => {
         setVisible(false)
     }, [quizState.word]);
 
-    console.log("Rendering study card...");
-    console.log(quizState);
 
+    // Keyboard-based input for the quiz view
     const handleInput = (e) => {
         
         console.log(e.code);
@@ -59,20 +56,11 @@ const Quiz = ( { lang, user, setCategory, queries, mutations }) => {
             setVisible(!visible);
         }
     
-        if(e.code === 'Digit1') {
-            setAnswerState({clicked: 0});
-        }
-    
-        if(e.code === 'Digit2' && quizState.answerList.length >= 2) {
-            setAnswerState({clicked: 1});
-        }
-    
-        if(e.code === 'Digit3' && quizState.answerList.length >= 3) {
-            setAnswerState({clicked: 2});
-        }
-    
-        if(e.code === 'Digit4' && quizState.answerList.length >= 4) {
-            setAnswerState({clicked: 3});
+        // Check number input for each possible response
+        for(let i=0; i<quizState.answerList.length; i++) {
+            if(e.code === `Digit${i+1}`) {
+            setAnswerState({clicked: i});
+           }
         }
     }
 
@@ -84,9 +72,13 @@ const Quiz = ( { lang, user, setCategory, queries, mutations }) => {
 
     const toNextWord = () => {
         let words = quizState.words;
+
+        // If the user got the word wrong, add it to the end of the queue
         if(answerState.result === 'incorrect') {
             words.unshift(quizState.word);
         }
+
+        // Get next word and update the state
         let state = getNextWord(words);
         state.username = quizState.username;
         setQuizState(state);
@@ -103,30 +95,33 @@ const Quiz = ( { lang, user, setCategory, queries, mutations }) => {
         );
     }
 
+    // Handler for the "show info" button
     function handleClick(e) {
         e.preventDefault();
         setVisible(!visible);
     }
 
     return(
-            <><section tabIndex={0} onKeyDown={handleInput} className="relative flex flex-col basis-full md:basis-3/4 w-full justify-between items-center shadow-md">
-                <div className="relative flex flex-col justify-evenly w-full basis-full">
-                    <div className={(visible ? '' : 'hidden') + " absolute h-full w-full bg-white/50 md:hidden"}/>
-                    <div className="flex justify-center">
-                    <h2 className={styles.tango + " my-2 text-7xl md:text-7xl lg:text-7xl mb-2"}>{quizState.word.item.tango}</h2>
-                    </div>
-                    <ButtonGrid answerList={quizState.answerList} setAnswerState={setAnswerState} answerState={answerState} quizState={quizState}/>
-                    <div className="text-center" style={{"visibility": (answerState.clicked == -1 ? "hidden" : "visible")} }>
-                        <button type="button" className="my-2" onClick={() => toNextWord()}>{feedback} →</button>
-                    </div>       
+    <>
+        <section tabIndex={0} onKeyDown={handleInput} className="relative flex flex-col basis-full md:basis-3/4 w-full justify-between items-center shadow-md">
+            <div className="relative flex flex-col justify-evenly w-full basis-full">
+                <div className={(visible ? '' : 'hidden') + " absolute h-full w-full bg-white/50 md:hidden"}/>
+                <div className="flex justify-center">
+                <h2 className={styles.tango + " my-2 text-7xl md:text-7xl lg:text-7xl mb-2"}>{quizState.word.item.tango}</h2>
                 </div>
-                <div className="flex w-full justify-between md:justify-end items-end pb-2">
-                        <button onClick={handleClick} className="text-white text-sm block md:hidden rounded-md bg-gray-400 p-3 ml-4">{visible ? "Hide info" : "Show info"}</button>
-                        <Categories setCategory={setCategory} displayStyle={"menu"}/>
-                </div>
-            </section>
-            <Definition word={quizState.word} answerState={answerState} lang={lang} visible={visible} setVisible={setVisible}/>
-   </> );
+                <ButtonGrid answerList={quizState.answerList} setAnswerState={setAnswerState} answerState={answerState} quizState={quizState}/>
+                <div className="text-center" style={{"visibility": (answerState.clicked == -1 ? "hidden" : "visible")} }>
+                    <button type="button" className="my-2" onClick={() => toNextWord()}>{feedback} →</button>
+                </div>       
+            </div>
+            <div className="flex w-full justify-between md:justify-end items-end pb-2">
+                    <button onClick={handleClick} className="text-white text-sm block md:hidden rounded-md bg-gray-400 p-3 ml-4">{visible ? "Hide info" : "Show info"}</button>
+                    <Categories setCategory={setCategory} displayStyle={"menu"}/>
+            </div>
+        </section>
+        <Definition word={quizState.word} answerState={answerState} lang={lang} visible={visible} setVisible={setVisible}/>
+    </> 
+    );
 }
 
 const Definition = ( { word, answerState, lang, visible, setVisible } ) => {

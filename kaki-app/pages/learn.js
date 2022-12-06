@@ -86,8 +86,6 @@ function Learn( { lang } ) {
         return (<Loading lang={lang}/>);
     }
 
-    console.log("Learn loaded!");
-
     return(
         <section className={styles.learn}>
             {category !== '' && (<QuizWrapper lang={lang} user={session?.user} category={category} setCategory={setCategory}/>)}
@@ -121,7 +119,7 @@ const QuizWrapper = ( { lang, user, category, setCategory } ) => {
         ]
       });   
 
-    // Make it easier to access queries and mutations
+    // Make it easier to access queries and mutations later
     const queries = {
         items: {
             query: queryItems,
@@ -136,7 +134,6 @@ const QuizWrapper = ( { lang, user, category, setCategory } ) => {
             error: wordStatus.error
         }
     }
-
     const mutations = {
         create: {
             mutation: createItems,
@@ -147,12 +144,10 @@ const QuizWrapper = ( { lang, user, category, setCategory } ) => {
     }
 
     if (wordStatus.loading || itemStatus.loading || createStatus.loading) {
-        console.log("Loading Quiz Wrapper...");
         return(<Loading lang={lang}/>);
     }
         
     if (wordStatus.error || itemStatus.error || createStatus.error) {
-        console.log("Error in Quiz Wrapper!");
         return(
             <pre>
                 {wordStatus?.error?.message}
@@ -162,8 +157,6 @@ const QuizWrapper = ( { lang, user, category, setCategory } ) => {
         );
     }
 
-    console.log("Quiz Wrapper loaded!");
-    
     return(
         <Quiz lang={lang} user={user} setCategory={setCategory} queries={queries} mutations={mutations}/>
     );
