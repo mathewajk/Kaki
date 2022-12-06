@@ -14,7 +14,7 @@
 
 ## Important note
 
-This website is underactive development, and things may not work as intended. It probably cannot handle a large number of users just yet. Feel free to make an account, and also to reach out to me at [mathew@mathewkramer.io](mailto:mathew@mathewkramer.io) if you have feedback or encounter an issues! If you'd prefer to make an account through Google OAuth, please let me know so that I can add you to the list of approved test users (and reopen the OAuth signin).
+This website is underactive development, and things may not work as intended. It probably cannot handle a large number of users just yet. Feel free to make an account, though, with that in mind, and also to reach out to me at [mathew@mathewkramer.io](mailto:mathew@mathewkramer.io) if you have feedback or encounter an issues! If you'd prefer to make an account through Google OAuth, please let me know so that I can add you to the list of approved test users (and reopen the OAuth signin).
 
 ## About pitch accent
 
