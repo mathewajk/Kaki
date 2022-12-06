@@ -20,7 +20,7 @@ export const getMorae = (word) => {
   return morae;
 }
 
-export const Pitch = (props) => {
+const Pitch = (props) => {
 
     let word = props.word;
 
@@ -55,3 +55,5 @@ export const Pitch = (props) => {
       <span className={styles["sr-only"]}> - Pitch accent: {word.pitch}</span></div>
     );
   }
+
+export default Pitch;
