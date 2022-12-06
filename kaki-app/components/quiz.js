@@ -29,11 +29,11 @@ const Quiz = ( { lang, user, setCategory, queries, mutations }) => {
     // If these change, handle any changes to the available words
     useEffect(() => {
         handleStudyItems(quizState, setQuizState, queries)
-    }, [queries]);
+    }, [queries.items.status]);
 
     useEffect(() => {
         handleWords(quizState, setQuizState, queries, mutations);
-    }, [queries]);
+    }, [queries.words.status]);
 
     // Hide info when the current word advanced
     useEffect(() => {
