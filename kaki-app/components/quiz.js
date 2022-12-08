@@ -119,7 +119,7 @@ const Quiz = ( { lang, user, setCategory, queries, mutations }) => {
                     <Categories setCategory={setCategory} displayStyle={"menu"}/>
             </div>
         </section>
-        <Definition word={quizState.word} answerState={answerState} lang={lang} visible={visible} setVisible={setVisible}/>
+        <Definition word={quizState.word.item} answerState={answerState} lang={lang} visible={visible} setVisible={setVisible}/>
     </> 
     );
 }
