@@ -140,7 +140,7 @@ const Definition = ( { word, answerState, lang, visible, setVisible } ) => {
     return(
         <div className={(visible ? '' : "hidden") + " rounded-md w-3/4 h-1/2 shadow-lg absolute md:shadow-none md:relative md:block bg-gray-200 dark:bg-gray-900 dark:border-gray-600 md:basis-1/4 border-t-4 border-gray-200 md:w-full"}>
             <div className="overflow-scroll h-full">
-                {! visible && (<div onClick={handleClick} className="text-gray-900 hover:cursor-pointer hover:text-orange-500 flex w-full h-full items-center justify-center">
+                {! visible && (<div onClick={handleClick} className="text-gray-900 dark:text-gray-200 hover:cursor-pointer hover:text-orange-500 flex w-full h-full items-center justify-center">
                     <button className="font-normal bg-transparent hover:bg-transparent hover:text-orange-500 shadow-none" onClick={handleClick}>{text}</button>
                     </div>)}
                 {visible && (
