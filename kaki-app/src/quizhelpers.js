@@ -51,7 +51,7 @@ export const handleWords = (quizState, setQuizState, queries, mutations ) => {
     if(quizState.username) {
         
         // Collect ids of all queried words
-        let ids = Object.values(wordStatus.data.words).map(item => parseInt(item.id));
+        let ids = Object.values(queries.words.data.words).map(item => parseInt(item.id));
        
         mutations.create.mutation({
             variables: { 
