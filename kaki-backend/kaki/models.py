@@ -86,7 +86,7 @@ class StudyItem(models.Model):
     user = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
     item = models.ForeignKey(VocabItem, on_delete=models.CASCADE)
     
-    due  = models.CharField(max_length = 255, null=False, blank=False)
+    due  = models.CharField(max_length = 255, null=True, blank=True)
     seen = models.BooleanField(default=False, null=False, blank=True)
 
     interval = models.IntegerField(default=1, blank=False, null=False)
