@@ -119,6 +119,7 @@ class Query(graphene.ObjectType):
     study_items = graphene.List(StudyItemType, \
                                 username= graphene.Argument(graphene.String(), required=False), \
                                 category= graphene.Argument(graphene.String(), required=False), \
+                                seen    = graphene.Boolean(), \
                                 getDue  = graphene.Boolean())
 
     words = graphene.List(VocabType, \
@@ -152,6 +153,8 @@ class Query(graphene.ObjectType):
 
     def resolve_study_items(self, info, **kwargs):
         
+        seen = kwargs.get('seen')
+        
         username  = kwargs.get('username')
         if not username:
             return StudyItem.objects.all()
@@ -163,16 +166,24 @@ class Query(graphene.ObjectType):
         userItems = StudyItem.objects.filter(user=user[0])
 
         category = kwargs.get('category')
+        
         if not category:
+            if not seen:
+                return filter(userItems, seen=false)[:20]
             if(kwargs.get('getDue')):
-                return list(filter(lambda x: parser.parse(x.due) < datetime.now(timezone.utc), userItems))
-            else:
-                return userItems
+                return list(filter(lambda x: x.due and parser.parse(x.due) < datetime.now(timezone.utc), userItems))
+            return userItems
+
+        userItems = userItems.filter(item__category__contains=category)
+
+        if not seen:
+            return filter(userItems, seen=false)[:20]
 
         if(kwargs.get('getDue')):
-            return list(filter(lambda x: parser.parse(x.due) < datetime.now(timezone.utc), userItems.filter(item__category__contains=category)))
-        else:
-            return userItems.filter(item__category__contains=category)
+            return list(filter(lambda x: parser.parse(x.due) < datetime.now(timezone.utc), userItems))
+
+        
+        return userItems
         
 class Mutation(graphene.ObjectType):
     create_word = CreateVocabItem.Field()
