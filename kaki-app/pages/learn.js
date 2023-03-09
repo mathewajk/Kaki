@@ -79,8 +79,6 @@ function Learn( { lang } ) {
     const { data: session, status } = useSession();
     const [ category, setCategory ] = useState('');
 
-    console.log(session);
-
     if(status === 'loading') {
         console.log("Loading Learn...");
         return (<Loading lang={lang}/>);

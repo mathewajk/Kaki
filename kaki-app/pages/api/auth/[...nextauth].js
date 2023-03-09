@@ -7,8 +7,8 @@ import jwt from "jsonwebtoken";
 
 
 const refreshToken = async function (refreshToken) {
-    console.log("Refreshing token");
-    console.log(refreshToken);
+    // console.log("Refreshing token");
+    // console.log(refreshToken);
     try {
         const response = await axios.post(
             process.env.NEXT_PUBLIC_BACKEND_BASE_URL + "api/auth/token/refresh/",
@@ -16,7 +16,7 @@ const refreshToken = async function (refreshToken) {
                 refresh: refreshToken,
             },
         );
-        console.log(response.data);
+        // console.log(response.data);
         const { access, refresh, access_token_expiration } = response.data;
         return [ access, refresh, access_token_expiration ];
     } catch {
@@ -30,22 +30,22 @@ const isJwtExpired = (token) => {
     const currentTime = Math.round(Date.now() / 1000 + 60);
     const decoded = jwt.decode(token);
 
-    console.log(`Current time + 60 seconds: ${new Date(currentTime * 1000)}`);
-    console.log(`Token lifetime: ${new Date(decoded["exp"] * 1000)}`);
+    // console.log(`Current time + 60 seconds: ${new Date(currentTime * 1000)}`);
+    // console.log(`Token lifetime: ${new Date(decoded["exp"] * 1000)}`);
 
     if (decoded["exp"]) {
       const adjustedExpiry = decoded["exp"];
 
       if (adjustedExpiry < currentTime) {
-        console.log("Token expired");
+        // console.log("Token expired");
         return true;
       }
 
-      console.log("Token has not expired yet");
+      // console.log("Token has not expired yet");
       return false;
     }
 
-    console.log('Token["exp"] does not exist');
+    // console.log('Token["exp"] does not exist');
     return true;
 };
 
