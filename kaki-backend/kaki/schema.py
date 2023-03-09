@@ -152,8 +152,8 @@ class Query(graphene.ObjectType):
         return user[0]
 
     def resolve_study_items(self, info, **kwargs):
-        
-        seen = kwargs.get('seen')
+
+        # seen = kwargs.get('seen')
         
         username  = kwargs.get('username')
         if not username:
@@ -168,17 +168,18 @@ class Query(graphene.ObjectType):
         category = kwargs.get('category')
         
         if not category:
-            if not seen:
-                return filter(userItems, seen=false)[:20]
+            # if not seen:
+            #    return filter(userItems, seen=false)[:20]
             if(kwargs.get('getDue')):
                 return list(filter(lambda x: x.due and parser.parse(x.due) < datetime.now(timezone.utc), userItems))
             return userItems
 
         userItems = userItems.filter(item__category__contains=category)
 
-        if not seen:
-            return filter(userItems, seen=false)[:20]
+        # if not seen:
+        #    return filter(userItems, seen=false)[:20]
 
+        print("Getting ")
         if(kwargs.get('getDue')):
             return list(filter(lambda x: parser.parse(x.due) < datetime.now(timezone.utc), userItems))
 
