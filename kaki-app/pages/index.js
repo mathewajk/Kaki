@@ -22,7 +22,7 @@ function Home( { lang } ) {
       {
         !session && (
           <><div className="grid">
-            <p className="text-7xl md:text-9xl lg:text-splash leading-none mb-4 color-orangered">{lang==="EN" ? "Kaki" : "カキ"}</p>
+            <p className="text-7xl md:text-9xl lg:text-splash leading-none mb-12 color-orangered">{lang==="EN" ? "Kaki" : "カキ"}</p>
           </div>
           
           <div className="text-2xl mb-8">

@@ -30,6 +30,14 @@ a {
 
 nav {
   @apply relative bg-white dark:bg-gray-900 dark:text-white z-10;
+  padding-top: 1rem;
+  padding-bottom: 1.5rem;
+  margin-bottom: 2rem;
+  font-size: 1.5rem;
+}
+
+nav button {
+  @apply p-2;
 }
 
 nav::after {
@@ -41,7 +49,8 @@ nav::after {
 }
 
 button {
-  @apply p-2 font-bold cursor-pointer rounded-md transition shadow-md duration-150 ease-in-out;
+  @apply p-4 font-bold cursor-pointer transition shadow-md duration-150 ease-in-out;
+  border-radius: 10px;
 }
 
 button[type="button"], button[type="submit"] {
@@ -54,7 +63,7 @@ button:hover {
 }
 
 .color-orangered {
-  color: rgb(236, 150, 10);
+  color: rgb(255, 115, 0);
   @apply drop-shadow-sm
 }
 

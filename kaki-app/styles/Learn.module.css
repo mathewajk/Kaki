@@ -54,6 +54,12 @@
     @apply text-base font-normal md:text-lg pt-3 shadow-md rounded-lg;
 }
 
+@media (prefers-color-scheme: dark) {
+    .buttonGrid button {
+        background-color: white;
+    }
+}
+
 .buttonGrid button:hover:enabled {
     background-color: rgb(241, 245, 228);
 }

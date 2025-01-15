@@ -13,7 +13,7 @@ const Header = ({lang, setLang}) => {
     const { data: session, status } = useSession();
 
     return(
-        <nav className="menu top-0 background-blur-sm left-0 flex shadow-md justify-between px-6 py-3 w-full">
+        <nav className="menu top-0 background-blur-sm left-0 flex shadow-md justify-between px-6 w-full">
 
         <div className="flex h-10 lg:text-xl md:text-lg font-medium">
             <div className="flex items-center">
