@@ -1,8 +1,18 @@
 import os
 import environ
 
-env = environ.Env()
-environ.Env.read_env()
+env = environ.Env(
+    # set casting, default value
+    DEBUG=(bool, False)
+)
+
+BASE_DIR = os.path.dirname(
+    os.path.dirname(os.path.abspath(__file__))
+)
+
+# Take environment variables from .env file
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
 
 """
 Django settings for backend project.
@@ -222,7 +232,7 @@ USE_TZ = True
 CORS_ORIGIN_WHITELIST = [
     'https://kaki-backend.up.railway.app',
     'https://kaki-study.vercel.app',
-    'https://kaki-narquelion.vercel.app',
+    'https://kaki.viridian.fish',
     'http://localhost:3000',
     'http://localhost:8000',
     "http://127.0.0.1:3000",
@@ -232,7 +242,7 @@ CORS_ORIGIN_WHITELIST = [
 CSRF_TRUSTED_ORIGINS = [
     'https://kaki-backend.up.railway.app',
     'https://kaki-study.vercel.app',
-    'https://kaki-narquelion.vercel.app',
+    'https://kaki.viridian.fish',
     'http://127.0.0.1:3000',
     'http://127.0.0.1:8000',
     'http://localhost:3000',
@@ -242,7 +252,7 @@ CSRF_TRUSTED_ORIGINS = [
 CSRF_ALLOWED_ORIGINS = [
     'https://kaki-backend.up.railway.app',
     'https://kaki-study.vercel.app',
-    'https://kaki-narquelion.vercel.app',
+    'https://kaki.viridian.fish',
     'http://127.0.0.1:3000',
     'http://127.0.0.1:8000',
     'http://localhost:3000',
