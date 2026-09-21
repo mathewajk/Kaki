@@ -8,9 +8,9 @@
   </a>
 </p>
 
-[Kaki](https://kaki-study.vercel.app/) is a minimalistic web app for studying Japanese pitch accent for vocabulary via spaced repetition. It is aimed at people who have been studying Japanese vocabulary but haven't necessarily been focusing on learning pitch. Version 1 includes only text-based visualizations of pitch, but future versions will include audio study modes as well as definition and reading study!
+[Kaki](https://kaki.viridian.fish/) is a minimalistic web app for studying Japanese pitch accent for vocabulary via spaced repetition. It is aimed at people who have been studying Japanese vocabulary but haven't necessarily been focusing on learning pitch. Version 1 includes only text-based visualizations of pitch, but future versions will include audio study modes as well as definition and reading study!
 
-<h3 align="center"><a href="https://kaki-study.vercel.app/">Try Kaki!</h3>
+<h3 align="center"><a href="https://kaki.viridian.fish//">Try Kaki!</h3>
 
 ## Important note
 
